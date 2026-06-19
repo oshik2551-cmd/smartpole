@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Shade & Light — กรุงเทพมหานคร v3 · RBAC</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+--bg0:#080b10;--bg1:#0e1420;--bg2:#131b2e;--bg3:#192138;--line:#1e2d46;
+--a:#00c6ff;--a2:#0a84ff;--g:#00e5a0;--y:#ffc14d;--r:#ff4d6d;
+--t:#e2eaf6;--t2:#6b7fa3;--t3:#2e3f5c;
+--mono:'Share Tech Mono',monospace;--sans:'Sarabun',sans-serif;
+}
+body.crisis{--bg0:#0a0000;--bg1:#110000;--bg2:#160000;--bg3:#1e0404;--line:#3a0a0a;--a:#ff4d6d;--a2:#c0193a;--g:#ff8c42;--y:#ffdd00;--r:#ff0033;--t:#ffe5e5;--t2:#a05050;--t3:#4a1010;}
+body.crisis .live-dot{background:var(--r)!important;box-shadow:0 0 8px var(--r)}
+body.crisis .crisis-btn{background:rgba(255,0,51,.15);border-color:rgba(255,0,51,.5);color:#ff0033}
+body.crisis .kpi.kr::after{animation:alarmPulse 1s infinite}
+@keyframes alarmPulse{0%,100%{opacity:1}50%{opacity:.3}}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:var(--sans);background:var(--bg0);color:var(--t)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--bg0)}::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+#loginOverlay{position:fixed;inset:0;z-index:9000;background:var(--bg0);display:flex;align-items:center;justify-content:center;overflow-y:auto;}
+#loginOverlay.hidden{display:none}
+.login-card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:36px 32px;width:360px;max-width:94vw;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.login-logo-sq{width:40px;height:40px;background:linear-gradient(135deg,var(--a),var(--a2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.login-title{font-size:15px;font-weight:700;color:var(--a)}.login-sub{font-size:10px;color:var(--t2);margin-top:2px}
+.login-label{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.login-input{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:8px;color:var(--t);font-family:var(--sans);font-size:13px;padding:9px 12px;outline:none;transition:border-color .2s;margin-bottom:14px}
+.login-input:focus{border-color:var(--a)}
+.login-btn{width:100%;background:linear-gradient(90deg,var(--a2),var(--a));border:none;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;padding:11px;border-radius:8px;cursor:pointer;transition:opacity .15s;margin-top:4px}
+.login-btn:hover{opacity:.88}
+.login-error{font-size:11px;color:var(--r);margin-top:8px;display:none;text-align:center}
+.quick-btns{display:flex;flex-direction:column;gap:5px;margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+.quick-label{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.quick-row{display:flex;gap:5px}
+.quick-btn{flex:1;background:var(--bg3);border:1px solid var(--line);border-radius:6px;color:var(--t2);font-size:10px;padding:6px 8px;cursor:pointer;transition:all .15s;text-align:center}
+.quick-btn:hover{border-color:var(--a);color:var(--a);background:rgba(0,198,255,.06)}
+.quick-btn .qrole{font-size:8px;margin-top:1px;opacity:.6}
+.login-success-overlay{position:fixed;inset:0;z-index:9100;background:rgba(8,11,16,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.login-success-inner{text-align:center}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.shake{animation:shake .4s ease}
+.shell{display:grid;grid-template-columns:200px 1fr;grid-template-rows:48px 1fr;height:100vh;overflow:hidden}
+.top{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:0 16px;background:var(--bg1);border-bottom:1px solid var(--line);z-index:20}
+.logo{display:flex;align-items:center;gap:8px;margin-right:12px}
+.logo-sq{width:28px;height:28px;background:linear-gradient(135deg,var(--a),var(--a2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo h1{font-size:13px;font-weight:700;color:var(--a)}
+.top-title{font-size:13px;font-weight:600;flex:1}
+.live-pill{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--g);background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.25);padding:3px 9px;border-radius:20px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--g);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.wx-top{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);background:rgba(0,198,255,.07);border:1px solid rgba(0,198,255,.15);padding:3px 10px;border-radius:6px;cursor:pointer}
+.clock{font-family:var(--mono);font-size:12px;color:var(--a);background:rgba(0,198,255,.08);border:1px solid rgba(0,198,255,.15);padding:3px 10px;border-radius:6px}
+.search-wrap{display:flex;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.search-wrap:focus-within{border-color:var(--a)}
+.search-wrap input{background:none;border:none;color:var(--t);font-family:var(--sans);font-size:11px;padding:4px 10px;width:160px;outline:none}
+.search-wrap input::placeholder{color:var(--t3)}
+.search-wrap button{background:rgba(0,198,255,.1);border:none;color:var(--a);padding:4px 9px;cursor:pointer;font-size:12px}
+.search-results{position:absolute;top:44px;background:var(--bg2);border:1px solid var(--line);border-radius:8px;min-width:220px;z-index:100;max-height:200px;overflow-y:auto;display:none}
+.search-res-item{padding:7px 12px;font-size:11px;cursor:pointer;border-bottom:1px solid var(--line);transition:background .1s}
+.search-res-item:hover{background:var(--bg3);color:var(--a)}
+.search-res-item .sr-district{color:var(--t2);font-size:9px}
+.search-container{position:relative}
+.crisis-btn{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.25);color:var(--r);padding:3px 10px;border-radius:6px;cursor:pointer;transition:all .2s}
+.crisis-btn:hover{background:rgba(255,77,109,.18)}
+.crisis-btn.active-crisis{background:rgba(255,0,51,.2);border-color:rgba(255,0,51,.6);animation:alarmBorder .8s infinite alternate}
+@keyframes alarmBorder{from{box-shadow:none}to{box-shadow:0 0 12px rgba(255,0,51,.4)}}
+#roleBadge{display:flex;align-items:center}
+.user-info{display:flex;align-items:center;gap:6px;font-size:11px;background:rgba(0,198,255,.06);border:1px solid rgba(0,198,255,.12);padding:3px 10px;border-radius:6px}
+.user-zone{font-size:9px;color:var(--t2);font-family:var(--mono)}
+.logout-btn{display:flex;align-items:center;gap:4px;background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.2);color:var(--r);font-size:10px;font-family:var(--mono);padding:3px 9px;border-radius:6px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{background:rgba(255,77,109,.18)}
+.side{background:var(--bg1);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:10px 6px;gap:2px;overflow-y:auto}
+.nav-sep{font-size:9px;color:var(--t3);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;padding:8px 8px 4px}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;font-size:12px;color:var(--t2);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left}
+.nav-btn:hover{background:var(--bg3);color:var(--t)}
+.nav-btn.on{background:linear-gradient(90deg,rgba(0,198,255,.12),transparent);color:var(--a);border-left:2px solid var(--a)}
+.nav-btn .ic{font-size:14px;width:16px;text-align:center}
+.badge{margin-left:auto;background:var(--r);color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px}
+.badge-g{margin-left:auto;background:rgba(0,229,160,.2);color:var(--g);font-size:8px;font-weight:700;padding:1px 5px;border-radius:8px}
+.side-foot{margin-top:auto;padding:10px 8px;font-size:10px;color:var(--t3);border-top:1px solid var(--line)}
+.odot{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--g);margin-right:4px;vertical-align:middle;animation:blink 2s infinite}
+.main{overflow-y:auto;padding:14px}
+.page{display:none}.page.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.kpi{background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:13px 14px;position:relative;overflow:hidden;transition:transform .15s}
+.kpi:hover{transform:translateY(-1px)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.ka::after{background:linear-gradient(90deg,var(--a),var(--a2))}.kpi.kg::after{background:linear-gradient(90deg,var(--g),#00b88a)}
+.kpi.ky::after{background:linear-gradient(90deg,var(--y),#f07800)}.kpi.kr::after{background:linear-gradient(90deg,var(--r),#c0193a)}
+.kpi-lbl{font-size:10px;color:var(--t2);margin-bottom:5px}
+.kpi-val{font-size:24px;font-weight:700;font-family:var(--mono);line-height:1}
+.ka .kpi-val{color:var(--a)}.kg .kpi-val{color:var(--g)}.ky .kpi-val{color:var(--y)}.kr .kpi-val{color:var(--r)}
+.kpi-sub{font-size:9px;color:var(--t2);margin-top:4px}
+.grid2{display:grid;grid-template-columns:1fr 300px;gap:10px;margin-bottom:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+.card-head{display:flex;align-items:center;gap:7px;padding:10px 13px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700}
+.card-head span{margin-left:auto;font-size:9px;color:var(--t2)}
+.tbl-wrap{overflow-y:auto;max-height:360px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{position:sticky;top:0;background:var(--bg2);font-size:9px;color:var(--t2);font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);z-index:10}
+td{padding:7px 10px;border-bottom:1px solid rgba(30,45,70,.5)}
+tr:hover td{background:var(--bg3)}
+tr.highlight-row td{background:rgba(0,198,255,.12)!important;border-color:rgba(0,198,255,.3)!important}
+.pill{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px}
+.pg{background:rgba(0,229,160,.1);color:var(--g)}.py{background:rgba(255,193,77,.1);color:var(--y)}.pr{background:rgba(255,77,109,.1);color:var(--r)}
+.pct-bar{width:50px;height:4px;background:var(--bg0);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-left:4px}
+.pct-fill{height:100%;border-radius:4px}
+.alerts{overflow-y:auto;max-height:360px;padding:6px}
+.al{display:flex;align-items:flex-start;gap:8px;padding:8px 9px;border-radius:7px;margin-bottom:3px;cursor:pointer;transition:background .12s;border:1px solid transparent}
+.al:hover{background:var(--bg3)}.al.rc{border-color:rgba(255,77,109,.2);background:rgba(255,77,109,.04)}.al.rw{border-color:rgba(255,193,77,.15);background:rgba(255,193,77,.03)}
+.al-dot{width:7px;height:7px;border-radius:50%;margin-top:3px;flex-shrink:0}
+.al-dot.c{background:var(--r);box-shadow:0 0 5px var(--r)}.al-dot.w{background:var(--y)}.al-dot.i{background:var(--a)}
+.al-body{flex:1}.al-title{font-size:11px;font-weight:600;margin-bottom:1px}.al-meta{font-size:9px;color:var(--t2)}
+.al-time{font-size:9px;font-family:var(--mono);color:var(--t2);flex-shrink:0}
+.dispatch-btn{display:inline-flex;align-items:center;gap:4px;background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--g);font-size:9px;font-family:var(--mono);padding:2px 8px;border-radius:6px;cursor:pointer;margin-top:4px;transition:all .15s}
+.dispatch-btn:hover{background:rgba(0,229,160,.25)}.dispatch-btn.sent{background:rgba(0,198,255,.12);border-color:rgba(0,198,255,.3);color:var(--a)}
+.sensors{padding:10px 13px}.srow{margin-bottom:10px}
+.slbl{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px}
+.slbl .sn{color:var(--t2)}.slbl .sv{font-family:var(--mono);font-weight:700}
+.sbar{height:5px;background:var(--bg0);border-radius:4px;overflow:hidden}.sfill{height:100%;border-radius:4px;transition:width 1.2s ease}
+.chart-wrap{padding:12px 14px}
+.src{font-size:9px;color:var(--t2);padding:6px 13px 10px;border-top:1px solid var(--line)}.src a{color:var(--a2);text-decoration:none}
+.wx-strip{margin:0 12px 10px;border-radius:10px;padding:10px 14px;border:1px solid;display:flex;align-items:flex-start;gap:10px;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.wx-strip.danger{background:rgba(255,77,109,.07);border-color:rgba(255,77,109,.3)}.wx-strip.warning{background:rgba(255,193,77,.07);border-color:rgba(255,193,77,.25)}.wx-strip.safe{background:rgba(0,229,160,.07);border-color:rgba(0,229,160,.2)}
+.bkk-wx{margin:0 12px 10px;background:linear-gradient(135deg,rgba(0,198,255,.07),rgba(10,132,255,.03));border:1px solid rgba(0,198,255,.2);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center}
+.wx-icon-big{font-size:52px}.wx-temp-big{font-size:42px;font-weight:700;font-family:var(--mono);color:var(--a)}
+.wx-stats{display:flex;flex-direction:column;gap:6px;text-align:right;font-size:10px}.wx-stats .sv{font-family:var(--mono);color:var(--a);font-weight:700}.wx-stats .sk{color:var(--t2)}
+.wx-fc-row{display:flex;gap:8px;padding:10px 12px;overflow-x:auto;border-top:1px solid var(--line)}
+.wx-fc{flex-shrink:0;width:64px;text-align:center;background:var(--bg1);border:1px solid var(--line);border-radius:8px;padding:7px 5px}
+.wx-fc-time{font-size:8px;color:var(--t2);font-family:var(--mono);margin-bottom:4px}.wx-fc-temp{font-size:11px;font-weight:700;font-family:var(--mono);color:var(--a)}.wx-fc-pop{font-size:8px;margin-top:2px}
+.wx-dist-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px}
+.wx-dcard{background:var(--bg1);border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+.wx-dcard.rain{border-color:rgba(0,198,255,.3);background:rgba(0,198,255,.04)}.wx-dcard.storm{border-color:rgba(255,77,109,.3);background:rgba(255,77,109,.04)}
+.status-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);padding:3px 9px;border-radius:20px;border:1px solid}
+.status-pill.loading{color:var(--a);border-color:rgba(0,198,255,.3);background:rgba(0,198,255,.07)}.status-pill.ok{color:var(--g);border-color:rgba(0,229,160,.3);background:rgba(0,229,160,.07)}.status-pill.err{color:var(--r);border-color:rgba(255,77,109,.3);background:rgba(255,77,109,.07)}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cd-ring{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;border:2px solid rgba(0,198,255,.25);font-size:9px;font-family:var(--mono);color:var(--a)}
+.ref-btn{display:flex;align-items:center;gap:5px;background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.25);color:var(--a);font-size:10px;font-family:var(--mono);padding:4px 10px;border-radius:8px;cursor:pointer;transition:all .15s}
+.ref-btn:hover{background:rgba(0,198,255,.2)}
+.rt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}
+.rt-card{background:var(--bg1);border:1px solid var(--line);border-radius:10px;padding:12px;position:relative;overflow:hidden;transition:border-color .3s,transform .15s}
+.rt-card:hover{transform:translateY(-1px)}.rt-card.fresh{animation:flashGreen .6s ease}
+@keyframes flashGreen{0%{border-color:var(--g);box-shadow:0 0 12px rgba(0,229,160,.3)}100%{border-color:var(--line);box-shadow:none}}
+.rt-card.outlier{border-color:rgba(255,77,109,.5)!important;animation:none!important}
+.outlier-badge{display:inline-flex;align-items:center;gap:3px;background:rgba(255,77,109,.15);border:1px solid rgba(255,77,109,.4);color:var(--r);font-size:8px;font-weight:700;padding:1px 6px;border-radius:8px;margin-top:4px}
+.flag-btn{display:inline-flex;align-items:center;gap:3px;background:rgba(255,193,77,.1);border:1px solid rgba(255,193,77,.3);color:var(--y);font-size:8px;padding:2px 6px;border-radius:6px;cursor:pointer;margin-top:4px;margin-left:4px}
+.flag-btn:hover{background:rgba(255,193,77,.2)}
+.rt-name{font-size:10px;color:var(--t2);margin-bottom:6px}.rt-pm{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1}.rt-unit{font-size:9px;color:var(--t2)}
+.rt-tag{display:inline-block;font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:5px}.rt-sub{font-size:9px;color:var(--t2);margin-top:4px}
+.rt-dot{position:absolute;top:9px;right:9px;width:6px;height:6px;border-radius:50%}.rt-dot.live{background:var(--g);box-shadow:0 0 5px var(--g);animation:blink 2s infinite}
+.hist-bar{margin-top:8px;display:flex;align-items:flex-end;gap:1.5px;height:22px}.hb{flex:1;border-radius:2px 2px 0 0;min-height:2px;opacity:.7}
+.bkk-main{margin:0 12px 10px;background:linear-gradient(135deg,rgba(0,198,255,.06),rgba(10,132,255,.03));border:1px solid rgba(0,198,255,.2);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.pm-big{font-size:48px;font-weight:700;font-family:var(--mono);line-height:1}
+.log-section{margin:0 12px 12px}.log-head{font-size:10px;color:var(--t2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;padding:6px 0;border-top:1px solid var(--line);display:flex;align-items:center;gap:6px}
+.log-list{max-height:140px;overflow-y:auto}.log-row{display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:5px;font-size:10px;border-bottom:1px solid rgba(30,45,70,.4)}
+.log-time{font-family:var(--mono);color:var(--t2);width:60px;flex-shrink:0}.log-zone{color:var(--t2);flex:1}.log-val{font-family:var(--mono);font-weight:700;width:50px;text-align:right}
+.air-footer{padding:8px 14px 10px;border-top:1px solid var(--line);font-size:9px;color:var(--t2);display:flex;justify-content:space-between}.air-footer a{color:var(--a2);text-decoration:none}
+.audit-row{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(30,45,70,.4);font-size:11px;transition:background .1s}.audit-row:hover{background:var(--bg3)}
+.audit-time{font-family:var(--mono);color:var(--t2);font-size:9px;width:55px;flex-shrink:0;padding-top:1px}
+.audit-icon{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.audit-body{flex:1}.audit-title{font-size:11px;font-weight:600;margin-bottom:1px}.audit-meta{font-size:9px;color:var(--t2)}.audit-user{font-size:9px;font-family:var(--mono);color:var(--a);flex-shrink:0}
+.roi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:12px}.roi-card{background:var(--bg1);border:1px solid var(--line);border-radius:10px;padding:13px}
+.roi-val{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--g)}.roi-lbl{font-size:10px;color:var(--t2);margin-bottom:5px}.roi-sub{font-size:9px;color:var(--t2);margin-top:4px}.roi-delta{font-size:10px;margin-top:6px}
+.roi-bar-wrap{margin-top:8px;height:4px;background:var(--bg0);border-radius:4px;overflow:hidden}.roi-bar-fill{height:100%;border-radius:4px;background:var(--g);transition:width 1s ease}
+.sets{padding:14px}.set-g{margin-bottom:18px}.set-g-title{font-size:9px;color:var(--t2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--bg1);border:1px solid var(--line);border-radius:8px;margin-bottom:5px}
+.set-lbl{font-size:12px}.set-sub{font-size:9px;color:var(--t2);margin-top:2px}
+.tog{width:34px;height:20px;background:var(--line);border-radius:10px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}.tog.on{background:var(--a2)}
+.tog::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:3px;left:3px;transition:left .2s}.tog.on::after{left:17px}
+.sl-wrap{display:flex;align-items:center;gap:7px}.sl-wrap input[type=range]{-webkit-appearance:none;width:90px;height:4px;background:var(--line);border-radius:4px;outline:none}
+.sl-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--a);border-radius:50%;cursor:pointer}
+.sl-v{font-family:var(--mono);font-size:11px;color:var(--a);width:28px;text-align:right}
+.role-banner{background:rgba(255,193,77,.1);border:1px solid rgba(255,193,77,.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--y)}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--g);border-radius:10px;padding:10px 16px;font-size:11px;color:var(--g);z-index:9999;animation:toastIn .3s ease;box-shadow:0 4px 20px rgba(0,229,160,.15)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(10px)}}
+
+/* ═══ CITIZEN REPORT SYSTEM ═══ */
+.rpt-hero{background:linear-gradient(135deg,rgba(0,198,255,.07),rgba(10,132,255,.03));border:1px solid rgba(0,198,255,.2);border-radius:14px;padding:18px 20px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
+.rpt-hero-icon{font-size:38px;flex-shrink:0}
+.rpt-hero-ttl{font-size:17px;font-weight:700;color:var(--a)}.rpt-hero-sub{font-size:11px;color:var(--t2);margin-top:3px}
+.rpt-stat{text-align:right;margin-left:auto}.rpt-stat-n{font-size:26px;font-weight:700;font-family:var(--mono);color:var(--g)}.rpt-stat-l{font-size:9px;color:var(--t2)}
+.rpt-layout{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}
+.rpt-card{background:var(--bg2);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.rpt-card-head{padding:11px 15px;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.rpt-body{padding:15px}
+.rf-lbl{font-size:10px;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.rf-req{color:var(--r);margin-left:2px}
+.rf-grp{margin-bottom:13px}
+.rf-inp{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:8px;color:var(--t);font-family:var(--sans);font-size:12px;padding:9px 12px;outline:none;transition:border-color .2s;resize:none}
+.rf-inp:focus{border-color:var(--a)}
+.rf-sel{width:100%;background:var(--bg3);border:1px solid var(--line);border-radius:8px;color:var(--t);font-family:var(--sans);font-size:12px;padding:9px 12px;outline:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7fa3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;transition:border-color .2s}
+.rf-sel:focus{border-color:var(--a)}
+/* Issue type grid */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:13px}
+.type-btn{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:10px 6px;cursor:pointer;text-align:center;transition:all .15s}
+.type-btn:hover{border-color:rgba(0,198,255,.4);background:rgba(0,198,255,.05)}
+.type-btn.sel{border-color:var(--a);background:rgba(0,198,255,.1);box-shadow:0 0 0 1px rgba(0,198,255,.25)}
+.type-ico{font-size:22px;margin-bottom:4px}.type-lbl{font-size:9px;color:var(--t2);font-weight:600;line-height:1.3}
+.type-btn.sel .type-lbl{color:var(--a)}
+/* Severity */
+.sev-row{display:flex;gap:6px;margin-bottom:13px}
+.sev-btn{flex:1;padding:8px 6px;border-radius:8px;border:1px solid var(--line);background:var(--bg3);cursor:pointer;text-align:center;font-size:10px;font-weight:600;color:var(--t2);transition:all .15s}
+.sev-btn:hover{border-color:var(--t2)}
+.sev-btn.sl{border-color:var(--g);background:rgba(0,229,160,.1);color:var(--g)}
+.sev-btn.sm{border-color:var(--y);background:rgba(255,193,77,.1);color:var(--y)}
+.sev-btn.sh{border-color:var(--r);background:rgba(255,77,109,.1);color:var(--r)}
+/* Photo zone */
+.photo-zone{border:2px dashed var(--line);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;min-height:90px;margin-bottom:13px}
+.photo-zone:hover,.photo-zone.drag{border-color:var(--a);background:rgba(0,198,255,.04)}
+.photo-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.photo-zone-ico{font-size:26px;display:block;margin-bottom:5px}.photo-zone-txt{font-size:11px;color:var(--t2)}.photo-zone-sub{font-size:9px;color:var(--t3);margin-top:2px}
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.photo-thumb{position:relative;border-radius:7px;overflow:hidden;aspect-ratio:1;background:var(--bg3)}
+.photo-thumb img{width:100%;height:100%;object-fit:cover}
+.photo-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);border:none;color:#fff;font-size:9px;width:16px;height:16px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+/* GPS */
+.gps-box{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:13px}
+.gps-row{display:flex;align-items:center;gap:8px}
+.gps-coords{font-family:var(--mono);font-size:11px;color:var(--a);flex:1}
+.gps-coords.empty{font-family:var(--sans);color:var(--t3);font-size:11px}
+.gps-btn{display:flex;align-items:center;gap:4px;background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.28);color:var(--a);font-size:10px;padding:5px 10px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:all .15s}
+.gps-btn:hover{background:rgba(0,198,255,.18)}.gps-btn.busy{opacity:.6;cursor:wait}
+.gps-acc{font-size:9px;color:var(--t2);margin-top:5px;display:flex;align-items:center;gap:3px}
+.gps-map{margin-top:8px;height:72px;border-radius:7px;border:1px solid var(--line);background:var(--bg0);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--t3);position:relative;overflow:hidden}
+.gps-pin{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--a);box-shadow:0 0 0 3px rgba(0,198,255,.25);animation:pinPulse 1.5s infinite}
+@keyframes pinPulse{0%,100%{box-shadow:0 0 0 3px rgba(0,198,255,.25)}50%{box-shadow:0 0 0 8px rgba(0,198,255,.08)}}
+/* Steps */
+.rpt-steps{display:flex;align-items:center;margin-bottom:14px}
+.rpt-step{flex:1;text-align:center;position:relative}
+.rpt-step:not(:last-child)::after{content:'';position:absolute;top:11px;left:58%;right:-38%;height:1px;background:var(--line)}
+.step-c{width:22px;height:22px;border-radius:50%;background:var(--bg3);border:2px solid var(--line);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-family:var(--mono);color:var(--t3);position:relative;z-index:1}
+.rpt-step.done .step-c{background:var(--g);border-color:var(--g);color:#000}
+.rpt-step.active .step-c{background:var(--a);border-color:var(--a);color:#fff}
+.step-l{font-size:8px;color:var(--t3)}.rpt-step.active .step-l,.rpt-step.done .step-l{color:var(--t2)}
+/* Submit btn */
+.rf-submit{width:100%;background:linear-gradient(90deg,var(--a2),var(--a));border:none;color:#fff;font-family:var(--sans);font-size:13px;font-weight:700;padding:11px;border-radius:9px;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;justify-content:center;gap:7px}
+.rf-submit:hover{opacity:.88}.rf-submit:disabled{opacity:.4;cursor:not-allowed}
+.rf-back{background:var(--bg3);border:1px solid var(--line);color:var(--t2);font-family:var(--sans);font-size:12px;padding:10px 16px;border-radius:9px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.rf-back:hover{border-color:var(--a);color:var(--a)}
+/* Success */
+.rpt-success{text-align:center;padding:30px 20px}
+.rpt-success-ico{font-size:52px;margin-bottom:10px}.rpt-success-ttl{font-size:16px;font-weight:700;color:var(--g);margin-bottom:6px}.rpt-success-sub{font-size:11px;color:var(--t2);line-height:1.7}
+.ticket-no{font-family:var(--mono);font-size:14px;color:var(--a);background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.3);padding:5px 14px;border-radius:7px;display:inline-block;margin:10px 0}
+.rpt-new-btn{background:rgba(0,229,160,.12);border:1px solid rgba(0,229,160,.3);color:var(--g);font-size:11px;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;margin-top:10px;transition:all .15s}
+.rpt-new-btn:hover{background:rgba(0,229,160,.22)}
+/* My reports list */
+.my-rpt-row{display:flex;align-items:flex-start;gap:9px;padding:9px 13px;border-bottom:1px solid rgba(30,45,70,.4);cursor:pointer;transition:background .1s}
+.my-rpt-row:hover{background:var(--bg3)}
+.my-rpt-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:rgba(0,198,255,.1);border:1px solid rgba(0,198,255,.2)}
+.my-rpt-body{flex:1;min-width:0}
+.my-rpt-ttl{font-size:11px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.my-rpt-meta{font-size:9px;color:var(--t2)}.my-rpt-thumb{width:34px;height:34px;border-radius:6px;object-fit:cover;border:1px solid var(--line);flex-shrink:0}
+/* Staff view */
+.staff-rpt-row{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border-bottom:1px solid rgba(30,45,70,.4);transition:background .1s}
+.staff-rpt-row:hover{background:var(--bg3);cursor:pointer}
+.staff-thumb{width:46px;height:46px;border-radius:7px;object-fit:cover;border:1px solid var(--line);flex-shrink:0}
+.staff-thumb-ph{width:46px;height:46px;border-radius:7px;background:var(--bg3);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.staff-body{flex:1;min-width:0}
+.staff-ttl{font-size:11px;font-weight:600;margin-bottom:2px}
+.staff-meta{font-size:9px;color:var(--t2);line-height:1.6}
+.staff-coords{font-family:var(--mono);font-size:8px;color:var(--a);margin-top:2px}
+.act-btn{display:inline-flex;align-items:center;gap:3px;font-size:9px;padding:2px 8px;border-radius:6px;cursor:pointer;margin-top:4px;margin-right:4px;border:1px solid;transition:all .15s}
+.act-btn.dispatch{background:rgba(0,229,160,.1);border-color:rgba(0,229,160,.3);color:var(--g)}.act-btn.dispatch:hover{background:rgba(0,229,160,.2)}
+.act-btn.done{background:rgba(0,198,255,.1);border-color:rgba(0,198,255,.3);color:var(--a)}.act-btn.done:hover{background:rgba(0,198,255,.2)}
+
+/* Summary box */
+.summary-box{background:var(--bg3);border:1px solid var(--line);border-radius:9px;padding:13px;margin-bottom:13px;font-size:11px;line-height:1.8}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 14px}
+.sum-k{font-size:9px;color:var(--t2)}.sum-v{font-weight:600}
+/* Tips */
+.tip-row{padding:10px 14px;border-bottom:1px solid rgba(30,45,70,.3);font-size:10px;line-height:1.7}
+.tip-ttl{color:var(--a);font-weight:700;margin-bottom:2px}
+
+@media(max-width:850px){
+.shell{grid-template-columns:52px 1fr}
+.nav-btn .label,.nav-sep,.badge,.badge-g,.side-foot,.logo h1{display:none}
+.nav-btn{justify-content:center;padding:10px}
+.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grid3,.rpt-layout{grid-template-columns:1fr}
+.rt-grid{grid-template-columns:repeat(2,1fr)}.wx-dist-grid{grid-template-columns:repeat(3,1fr)}
+.search-wrap input{width:100px}.type-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div id="loginOverlay">
+<div class="login-card">
+<div class="login-logo"><div class="login-logo-sq">💡</div><div><div class="login-title">Smart Shade & Light</div><div class="login-sub">กรุงเทพมหานคร · ระบบจัดการเสาไฟอัจฉริยะ</div></div></div>
+<div id="loginForm">
+<div class="login-label">ชื่อผู้ใช้</div>
+<input class="login-input" type="text" id="username" placeholder="ชื่อผู้ใช้..." autocomplete="username">
+<div class="login-label">รหัสผ่าน</div>
+<input class="login-input" type="password" id="password" placeholder="รหัสผ่าน..." autocomplete="current-password">
+<button class="login-btn" onclick="handleLogin()">เข้าสู่ระบบ</button>
+<div class="login-error" id="loginError"></div>
+</div>
+<div class="quick-btns">
+<div class="quick-label">เข้าสู่ระบบด่วน (Demo)</div>
+<div class="quick-row">
+<div class="quick-btn" onclick="quickLogin('admin','admin123')">⚙️ Admin<div class="qrole">ผู้ดูแลระบบ</div></div>
+<div class="quick-btn" onclick="quickLogin('staff1','staff123')">🔧 Staff<div class="qrole">เจ้าหน้าที่</div></div>
+<div class="quick-btn" onclick="quickLogin('citizen1','pass123')">👤 Citizen<div class="qrole">ประชาชน</div></div>
+</div>
+</div>
+</div>
+</div>
+<div class="login-success-overlay" id="loginSuccessOverlay"></div>
+
+<div class="shell" id="appShell" style="display:none">
+<header class="top">
+<div class="logo"><div class="logo-sq">💡</div><h1>Smart Shade & Light</h1></div>
+<span class="top-title" id="ptitle">ภาพรวมระบบ</span>
+<div class="live-pill"><span class="live-dot"></span>LIVE</div>
+<div class="search-container">
+<div class="search-wrap">
+<input type="text" id="searchInput" placeholder="ค้นหาเขต / เสาไฟ..." oninput="liveSearch(this.value)" onkeydown="if(event.key==='Enter')runSearch(this.value)">
+<button onclick="runSearch(document.getElementById('searchInput').value)">🔍</button>
+</div>
+<div class="search-results" id="searchResults"></div>
+</div>
+<button class="crisis-btn" id="crisisBtn" onclick="toggleCrisis()">🚨 Crisis Mode</button>
+<div class="wx-top" onclick="go('weather',document.querySelector('[data-page=weather]'))">
+<span id="wxTopIcon">🌤</span><span id="wxTopTemp" style="color:var(--a);font-weight:700">—°C</span><span id="wxTopDesc" style="color:var(--t2);font-size:10px">รอข้อมูล</span>
+</div>
+<div class="clock" id="clk">--:--:--</div>
+<div id="roleBadge"></div>
+<div class="user-info"><span id="currentUser" style="font-size:11px;color:var(--t)">—</span><span class="user-zone" id="userZone" style="display:none"></span></div>
+<button class="logout-btn" id="logoutBtn">⏏ ออก</button>
+</header>
+
+<aside class="side">
+<div class="nav-sep">หลัก</div>
+<button class="nav-btn on" data-page="dash" onclick="go('dash',this)"><span class="ic">🗺</span><span class="label">ภาพรวม</span></button>
+<button class="nav-btn" data-page="alert" onclick="go('alert',this)"><span class="ic">🔔</span><span class="label">แจ้งเตือน</span><span class="badge">4</span></button>
+<button class="nav-btn" id="auditNavBtn" data-page="audit" data-require-permission="audit:view" onclick="go('audit',this)"><span class="ic">📋</span><span class="label">ประวัติการสั่งงาน</span></button>
+<button class="nav-btn" id="reportNavBtn" data-page="report" onclick="go('report',this)"><span class="ic">📝</span><span class="label">แจ้งปัญหา</span><span class="badge-g" id="rptBadge" style="display:none">0</span></button>
+<div class="nav-sep">ข้อมูลสด</div>
+<button class="nav-btn" data-page="weather" onclick="go('weather',this)"><span class="ic">🌧</span><span class="label">Weather Alert</span><span class="badge" id="wxBadge" style="display:none">!</span></button>
+<button class="nav-btn" data-page="air" onclick="go('air',this)"><span class="ic">🌫</span><span class="label">PM2.5 Real-time</span></button>
+<button class="nav-btn" data-page="energy" onclick="go('energy',this)"><span class="ic">⚡</span><span class="label">พลังงาน & ROI</span></button>
+<div class="nav-sep">ระบบ</div>
+<button class="nav-btn" id="settingsNavBtn" data-page="settings" data-require-permission="settings:edit" onclick="go('settings',this)"><span class="ic">⚙️</span><span class="label">ตั้งค่า</span></button>
+<div class="side-foot"><span class="odot"></span>Mesh เชื่อมต่อ</div>
+</aside>
+
+<main class="main">
+<!-- DASHBOARD -->
+<div class="page on" id="p-dash">
+<div id="roleBanner"></div>
+<div class="kpis">
+<div class="kpi ka"><div class="kpi-lbl">เสาไฟทั้ง 50 เขต</div><div class="kpi-val" id="kTot">—</div><div class="kpi-sub">ดวงโคม · กทม. 2568</div></div>
+<div class="kpi kg"><div class="kpi-lbl">ใช้งานได้</div><div class="kpi-val" id="kOk">—</div><div class="kpi-sub" id="kOkPct">—</div></div>
+<div class="kpi ky"><div class="kpi-lbl">รอซ่อม/ดูแล</div><div class="kpi-val" id="kWait">—</div><div class="kpi-sub">ส่งทีมแล้ว</div></div>
+<div class="kpi kr"><div class="kpi-lbl">ดับ/ถูกขโมย</div><div class="kpi-val" id="kOff">—</div><div class="kpi-sub">สายไฟถูกลักขโมย</div></div>
+</div>
+<div class="grid2">
+<div class="card">
+<div class="card-head">📋 สถานะรายเขต 50 เขต <span>ข้อมูลจริง · สนย.กทม.</span></div>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>เขต</th><th>ทั้งหมด</th><th>ใช้ได้</th><th>รอซ่อม</th><th>ดับ</th><th>สถานะ</th></tr></thead><tbody id="dtbody"></tbody></table></div>
+<div class="src">แหล่งข้อมูล: <a href="https://data.bangkok.go.th/" target="_blank">data.bangkok.go.th · สำนักการโยธา กทม. 2568</a></div>
+</div>
+<div class="card"><div class="card-head">🚨 แจ้งเตือนล่าสุด <span>4 ใหม่</span></div><div class="alerts" id="alerts"></div></div>
+</div>
+<div class="grid3">
+<div class="card"><div class="card-head">📡 เซนเซอร์ภาพรวม</div><div class="sensors" id="sens"></div></div>
+<div class="card"><div class="card-head">⚡ พลังงาน 24h</div><div class="chart-wrap"><canvas id="ecv" height="80"></canvas></div><div style="padding:0 13px 10px;font-size:11px;color:var(--g)">ประหยัด <b>23.4%</b> จากระบบเดิม</div></div>
+<div class="card"><div class="card-head">📊 สัดส่วน</div><div class="chart-wrap"><canvas id="dcv" height="80"></canvas></div><div style="padding:0 13px 10px;font-size:10px;color:var(--t2)" id="donut-leg"></div></div>
+</div>
+</div>
+
+<!-- ALERTS -->
+<div class="page" id="p-alert"><div class="card"><div class="card-head">🚨 รายการแจ้งเตือนทั้งหมด</div><div class="alerts" id="alerts2" style="max-height:none"></div></div></div>
+
+<!-- AUDIT -->
+<div class="page" id="p-audit">
+<div class="kpis">
+<div class="kpi ka"><div class="kpi-lbl">การสั่งงานวันนี้</div><div class="kpi-val" id="auditCount">—</div><div class="kpi-sub">รายการ</div></div>
+<div class="kpi kg"><div class="kpi-lbl">สำเร็จ</div><div class="kpi-val" id="auditOk">—</div><div class="kpi-sub">รายการ</div></div>
+<div class="kpi ky"><div class="kpi-lbl">รอยืนยัน</div><div class="kpi-val" id="auditPend">—</div><div class="kpi-sub">รายการ</div></div>
+<div class="kpi kr"><div class="kpi-lbl">ยกเลิก/ผิดปกติ</div><div class="kpi-val" id="auditCancel">—</div><div class="kpi-sub">รายการ</div></div>
+</div>
+<div class="card">
+<div class="card-head">📋 ประวัติการสั่งงาน
+<span style="display:flex;align-items:center;gap:8px;margin-left:auto">
+<select id="auditFilter" onchange="renderAudit()" style="background:var(--bg3);border:1px solid var(--line);color:var(--t2);font-size:9px;padding:2px 6px;border-radius:5px;font-family:var(--mono)">
+<option value="">ทั้งหมด</option><option value="LIGHT_ON">เปิดไฟ</option><option value="LIGHT_OFF">ปิดไฟ</option>
+<option value="REPAIR">แจ้งซ่อม</option><option value="DISPATCH">ส่งทีม</option>
+<option value="SENSOR_FLAG">Flag เซนเซอร์</option><option value="CITIZEN_REPORT">รายงานประชาชน</option>
+</select>
+</span>
+</div>
+<div style="overflow-y:auto;max-height:420px" id="auditList"></div>
+<div class="src">ระบบบันทึกทุกการสั่งงานอัตโนมัติ</div>
+</div>
+</div>
+
+<!-- ═══ CITIZEN REPORT PAGE ═══ -->
+<div class="page" id="p-report">
+<!-- Hero -->
+<div class="rpt-hero">
+<div class="rpt-hero-icon">📸</div>
+<div><div class="rpt-hero-ttl">แจ้งปัญหาเสาไฟ / สายไฟ</div><div class="rpt-hero-sub">ถ่ายรูปหลักฐาน · ระบุพิกัด GPS · ส่งถึงเจ้าหน้าที่โดยตรง</div></div>
+<div class="rpt-stat"><div class="rpt-stat-n" id="myRptCnt">0</div><div class="rpt-stat-l">รายงานของฉัน</div></div>
+</div>
+
+<!-- Steps -->
+<div class="rpt-steps" id="rptSteps">
+<div class="rpt-step active" id="rs1"><div class="step-c">1</div><div class="step-l">ประเภท & รายละเอียด</div></div>
+<div class="rpt-step" id="rs2"><div class="step-c">2</div><div class="step-l">ภาพถ่าย</div></div>
+<div class="rpt-step" id="rs3"><div class="step-c">3</div><div class="step-l">พิกัด GPS</div></div>
+<div class="rpt-step" id="rs4"><div class="step-c">4</div><div class="step-l">ยืนยัน & ส่ง</div></div>
+</div>
+
+<div class="rpt-layout">
+<!-- LEFT FORM -->
+<div id="rptFormWrap">
+
+<!-- STEP 1 -->
+<div id="rStep1">
+<div class="rpt-card">
+<div class="rpt-card-head">⚡ ประเภทปัญหา <span class="rf-req">*</span></div>
+<div class="rpt-body">
+<div class="type-grid">
+<div class="type-btn" onclick="pickType(this,'💡','หลอดดับ/ไฟไม่ติด')"><div class="type-ico">💡</div><div class="type-lbl">หลอดดับ<br>ไฟไม่ติด</div></div>
+<div class="type-btn" onclick="pickType(this,'⚡','สายไฟถูกขโมย')"><div class="type-ico">⚡</div><div class="type-lbl">สายไฟ<br>ถูกขโมย</div></div>
+<div class="type-btn" onclick="pickType(this,'🔌','เสาไฟล้ม/เอียง')"><div class="type-ico">🔌</div><div class="type-lbl">เสาไฟ<br>ล้ม/เอียง</div></div>
+<div class="type-btn" onclick="pickType(this,'🔥','ไฟช็อต/ประกายไฟ')"><div class="type-ico">🔥</div><div class="type-lbl">ไฟช็อต<br>ประกายไฟ</div></div>
+<div class="type-btn" onclick="pickType(this,'🌊','น้ำขังใต้เสาไฟ')"><div class="type-ico">🌊</div><div class="type-lbl">น้ำขัง<br>ใต้เสาไฟ</div></div>
+<div class="type-btn" onclick="pickType(this,'🔧','ปัญหาอื่น ๆ')"><div class="type-ico">🔧</div><div class="type-lbl">ปัญหา<br>อื่น ๆ</div></div>
+</div>
+<div class="rf-grp">
+<div class="rf-lbl">ระดับความเร่งด่วน <span class="rf-req">*</span></div>
+<div class="sev-row">
+<div class="sev-btn" onclick="pickSev(this,'low')">🟢 ปกติ</div>
+<div class="sev-btn" onclick="pickSev(this,'med')">🟡 เร่งด่วน</div>
+<div class="sev-btn" onclick="pickSev(this,'high')">🔴 ฉุกเฉิน</div>
+</div>
+</div>
+<div class="rf-grp">
+<div class="rf-lbl">เขต <span class="rf-req">*</span></div>
+<select class="rf-sel" id="rptDistrict"><option value="">-- เลือกเขต --</option></select>
+</div>
+<div class="rf-grp">
+<div class="rf-lbl">รายละเอียดปัญหา <span class="rf-req">*</span></div>
+<textarea class="rf-inp" id="rptDesc" rows="3" placeholder="อธิบายปัญหาที่พบ เช่น หลอดที่ 3 ดับแล้ว 2 วัน บริเวณหน้าปากซอย..."></textarea>
+</div>
+<div class="rf-grp">
+<div class="rf-lbl">รหัสเสาไฟ (ถ้าทราบ)</div>
+<input class="rf-inp" type="text" id="rptPoleId" placeholder="เช่น BK-04812">
+</div>
+<button class="rf-submit" onclick="rptGoStep(2)">ถัดไป — อัปโหลดรูปภาพ →</button>
+</div>
+</div>
+</div>
+
+<!-- STEP 2 -->
+<div id="rStep2" style="display:none">
+<div class="rpt-card">
+<div class="rpt-card-head">📸 ภาพถ่ายหลักฐาน</div>
+<div class="rpt-body">
+<div style="font-size:10px;color:var(--t2);margin-bottom:10px">แนบรูปได้สูงสุด 4 รูป (JPG/PNG ไม่เกิน 5MB/รูป)</div>
+<div class="photo-zone" id="photoZone" ondragover="phDragOver(event)" ondragleave="phDragLeave(event)" ondrop="phDrop(event)">
+<input type="file" id="photoInput" accept="image/*" multiple onchange="addPhotos(Array.from(this.files))">
+<span class="photo-zone-ico">📷</span>
+<div class="photo-zone-txt">คลิกหรือลากรูปมาวางที่นี่</div>
+<div class="photo-zone-sub">PNG · JPG · สูงสุด 4 รูป</div>
+</div>
+<div class="photo-grid" id="photoGrid"></div>
+<div id="photoCnt" style="font-size:10px;color:var(--t2);margin-bottom:12px">ยังไม่มีรูปภาพ (ไม่บังคับ)</div>
+<div style="display:flex;gap:8px">
+<button class="rf-back" onclick="rptGoStep(1)">← ย้อนกลับ</button>
+<button class="rf-submit" onclick="rptGoStep(3)">ถัดไป — ระบุพิกัด GPS →</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- STEP 3 -->
+<div id="rStep3" style="display:none">
+<div class="rpt-card">
+<div class="rpt-card-head">📍 พิกัดตำแหน่ง GPS</div>
+<div class="rpt-body">
+<div style="font-size:10px;color:var(--t2);margin-bottom:12px">ระบบจะขอสิทธิ์ GPS เพื่อระบุตำแหน่งแม่นยำ</div>
+<div class="gps-box">
+<div class="gps-row">
+<div>
+<div style="font-size:9px;color:var(--t2);margin-bottom:2px">พิกัด GPS</div>
+<div class="gps-coords empty" id="gpsCoordsEl">กดปุ่มเพื่อระบุตำแหน่ง</div>
+</div>
+<button class="gps-btn" id="gpsBtn" onclick="doGPS()">📍 ระบุตำแหน่ง</button>
+</div>
+<div class="gps-acc" id="gpsAccEl" style="display:none"><span style="color:var(--g)">●</span><span id="gpsAccTxt">—</span></div>
+<div class="gps-map" id="gpsMapEl"><span id="gpsMapTxt">ยังไม่มีพิกัด</span><div class="gps-pin" id="gpsPin" style="display:none"></div></div>
+</div>
+<div class="rf-grp">
+<div class="rf-lbl">ที่อยู่ / รายละเอียดตำแหน่ง</div>
+<input class="rf-inp" type="text" id="rptAddr" placeholder="เช่น ถ.ลาดพร้าว ซอย 71 หน้าปากซอย ตรงข้าม 7-11">
+</div>
+<div style="display:flex;gap:8px">
+<button class="rf-back" onclick="rptGoStep(2)">← ย้อนกลับ</button>
+<button class="rf-submit" onclick="rptGoStep(4)">ถัดไป — ยืนยัน & ส่ง →</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- STEP 4 confirm -->
+<div id="rStep4" style="display:none">
+<div class="rpt-card">
+<div class="rpt-card-head">✅ ยืนยันและส่งรายงาน</div>
+<div class="rpt-body">
+<div class="summary-box" id="rptSummary"></div>
+<div id="sumPhotoRow" style="display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap"></div>
+<div style="display:flex;gap:8px">
+<button class="rf-back" onclick="rptGoStep(3)">← ย้อนกลับ</button>
+<button class="rf-submit" id="rptSubmitBtn" onclick="submitReport()">📤 ส่งรายงานถึงเจ้าหน้าที่</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SUCCESS -->
+<div id="rStepOk" style="display:none">
+<div class="rpt-card">
+<div class="rpt-success">
+<div class="rpt-success-ico">✅</div>
+<div class="rpt-success-ttl">ส่งรายงานสำเร็จ!</div>
+<div class="rpt-success-sub">เจ้าหน้าที่ได้รับรายงานของคุณแล้ว<br>และจะดำเนินการโดยเร็ว</div>
+<div><div class="ticket-no" id="ticketNoEl">—</div></div>
+<div style="font-size:9px;color:var(--t2)">บันทึกหมายเลขนี้ไว้ติดตามสถานะ</div>
+<button class="rpt-new-btn" onclick="resetReport()">+ แจ้งปัญหาใหม่</button>
+</div>
+</div>
+</div>
+</div><!-- /left -->
+
+<!-- RIGHT PANEL -->
+<div>
+<!-- Tips -->
+<div class="rpt-card" id="rptTipsCard">
+<div class="rpt-card-head">💡 คำแนะนำการแจ้งปัญหา</div>
+<div class="tip-row"><div class="tip-ttl">📸 ถ่ายรูปให้ชัด</div>ควรถ่าย 2–3 มุมให้เห็นเสาไฟและปัญหาชัดเจน</div>
+<div class="tip-row"><div class="tip-ttl">📍 ระบุตำแหน่งให้แม่นยำ</div>ใช้ GPS หรือระบุชื่อถนน/ซอยให้ครบ</div>
+<div class="tip-row"><div class="tip-ttl">🚨 กรณีฉุกเฉิน (ไฟช็อต)</div>โทร <b style="color:var(--r)">1555</b> (MEA) ทันที ก่อนแจ้งในระบบ</div>
+<div class="tip-row" style="border:none"><div class="tip-ttl">⏱ ระยะเวลาดำเนินการ</div>ปกติ 1–3 วันทำการ · ฉุกเฉิน ≤4 ชั่วโมง</div>
+</div>
+
+<!-- My reports -->
+<div class="rpt-card">
+<div class="rpt-card-head">📋 รายงานของฉัน
+<span id="myRptBadge" style="margin-left:auto;background:rgba(0,198,255,.15);color:var(--a);font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;font-family:var(--mono)">0</span>
+</div>
+<div id="myRptList" style="max-height:280px;overflow-y:auto">
+<div style="padding:18px;text-align:center;font-size:10px;color:var(--t3)">ยังไม่มีรายงาน<br>กรอกแบบฟอร์มด้านซ้ายเพื่อแจ้งปัญหา</div>
+</div>
+</div>
+
+<!-- Staff panel -->
+<div class="rpt-card" id="staffRptPanel" style="display:none">
+<div class="rpt-card-head">🔧 รายงานทั้งหมด (Staff/Admin)
+<span id="allRptBadge" style="margin-left:auto;background:rgba(255,77,109,.15);color:var(--r);font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;font-family:var(--mono)">0</span>
+</div>
+<div id="staffRptList" style="max-height:360px;overflow-y:auto"></div>
+</div>
+</div><!-- /right -->
+</div>
+</div><!-- /p-report -->
+
+<!-- WEATHER -->
+<div class="page" id="p-weather">
+<div class="kpis">
+<div class="kpi ka"><div class="kpi-lbl">อุณหภูมิ กรุงเทพฯ</div><div class="kpi-val" id="wx-temp">—</div><div class="kpi-sub" id="wx-feels">รู้สึกเหมือน —</div></div>
+<div class="kpi ky"><div class="kpi-lbl">ความชื้น</div><div class="kpi-val" id="wx-hum">—</div><div class="kpi-sub">% Humidity</div></div>
+<div class="kpi kg"><div class="kpi-lbl">ความเร็วลม</div><div class="kpi-val" id="wx-wind">—</div><div class="kpi-sub" id="wx-wdir">กม./ชม.</div></div>
+<div class="kpi kr"><div class="kpi-lbl">ระดับแจ้งเตือน</div><div class="kpi-val" id="wx-alv">—</div><div class="kpi-sub" id="wx-adesc">—</div></div>
+</div>
+<div class="card" style="margin-bottom:10px">
+<div class="status-bar">
+<div class="status-pill loading" id="wxPill"><span class="spin" id="wxSpin">⟳</span><span id="wxPillTxt">กำลังโหลด...</span></div>
+<div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+<span style="font-size:9px;color:var(--t2);font-family:var(--mono)" id="wxUpdAt">—</span>
+<div class="cd-ring" id="wxCd">—</div>
+<button class="ref-btn" onclick="fetchWeather()">⟳ รีเฟรช</button>
+</div>
+</div>
+<div id="wxAlert"></div>
+<div class="bkk-wx">
+<div class="wx-icon-big" id="wxIcon">⏳</div>
+<div>
+<div class="wx-temp-big"><span id="wxTempVal">—</span>°C</div>
+<div style="font-size:12px;font-weight:600;margin-top:3px" id="wxDesc">กำลังโหลด...</div>
+<div style="font-size:10px;color:var(--t2);margin-top:2px">กรุงเทพมหานคร · OpenWeatherMap</div>
+<div style="font-size:10px;color:var(--t2);margin-top:4px">ความกดอากาศ: <span id="wxPres" style="color:var(--a);font-family:var(--mono)">—</span> hPa | ทัศนวิสัย: <span id="wxVis" style="color:var(--a);font-family:var(--mono)">—</span> กม.</div>
+</div>
+<div class="wx-stats">
+<div><span class="sk">🌧 ฝน 1h</span><br><span class="sv" id="wxRain">—</span></div>
+<div><span class="sk">💨 กระโชก</span><br><span class="sv" id="wxGust">—</span></div>
+<div><span class="sk">☁️ เมฆ</span><br><span class="sv" id="wxCloud">—</span></div>
+<div><span class="sk">🌅 ขึ้น</span><br><span class="sv" id="wxSR">—</span></div>
+<div><span class="sk">🌇 ตก</span><br><span class="sv" id="wxSS">—</span></div>
+</div>
+</div>
+<div style="padding:8px 12px 4px;font-size:10px;color:var(--t2);font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px">📅 พยากรณ์ 24 ชั่วโมง</div>
+<div class="wx-fc-row" id="wxFc"></div>
+</div>
+<div class="card" style="margin-bottom:10px">
+<div class="card-head">🗺 สภาพอากาศรายเขต 50 เขต <span id="wxDistUpd">จำลองจากสถานีกลาง</span></div>
+<div class="wx-dist-grid" id="wxDistGrid"></div>
+</div>
+<div class="card">
+<div class="card-head">📋 ตารางรายเขต</div>
+<div class="tbl-wrap"><table><thead><tr><th>#</th><th>เขต</th><th>สภาพ</th><th>🌡°C</th><th>💧%</th><th>💨 กม./ชม.</th><th>🌧 mm/h</th><th>แจ้งเตือน</th></tr></thead><tbody id="wxDistTable"></tbody></table></div>
+<div class="src">แหล่งข้อมูล: <a href="https://openweathermap.org" target="_blank">OpenWeatherMap API</a></div>
+</div>
+</div>
+
+<!-- PM2.5 -->
+<div class="page" id="p-air">
+<div class="kpis">
+<div class="kpi ky"><div class="kpi-lbl">PM2.5 กรุงเทพฯ (สด)</div><div class="kpi-val" id="airPmMain">—</div><div class="kpi-sub" id="airPmLv">รอข้อมูล...</div></div>
+<div class="kpi kg"><div class="kpi-lbl">AQI (US)</div><div class="kpi-val" id="airAqi">—</div><div class="kpi-sub" id="airAqiLv">—</div></div>
+<div class="kpi ka"><div class="kpi-lbl">สถานีรายงาน</div><div class="kpi-val" id="airStaCnt">—</div><div class="kpi-sub">สถานีจริง · กทม.</div></div>
+<div class="kpi kr"><div class="kpi-lbl">Outlier ที่ตรวจพบ</div><div class="kpi-val" id="outlierCount">0</div><div class="kpi-sub">จุดข้อมูลผิดปกติ</div></div>
+</div>
+<div class="card" style="margin-bottom:10px">
+<div class="status-bar">
+<div class="status-pill loading" id="airPill"><span class="spin" id="airSpin">⟳</span><span id="airPillTxt">กำลังโหลด...</span></div>
+<div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+<span style="font-size:9px;color:var(--t2);font-family:var(--mono)" id="airUpdAt">—</span>
+<div class="cd-ring" id="airCd">—</div>
+<button class="ref-btn" onclick="fetchAir()">⟳ รีเฟรช</button>
+</div>
+</div>
+<div class="bkk-main">
+<div>
+<div style="font-size:10px;color:var(--t2);margin-bottom:2px">PM2.5 · กรุงเทพมหานคร (เฉลี่ยทุกสถานี · ไม่รวม Outlier)</div>
+<div class="pm-big" id="bkkPm" style="color:var(--y)">—</div>
+<div style="font-size:10px;color:var(--t2);margin-top:4px">μg/m³ · <span id="bkkSta">WAQI Network</span></div>
+</div>
+<div style="text-align:right">
+<div style="font-size:11px;color:var(--t2)">AQI (US)</div>
+<div style="font-size:14px;font-weight:700;margin-top:4px" id="bkkLv">รอข้อมูล</div>
+<div style="font-size:11px;color:var(--t2);margin-top:6px" id="bkkAqiNum">—</div>
+<div style="font-size:9px;color:var(--t2);margin-top:3px;max-width:140px" id="bkkAdvice">—</div>
+<div style="font-size:9px;color:var(--t2);margin-top:6px" id="airLastUpd">—</div>
+</div>
+</div>
+<div class="rt-grid" id="rtGrid"></div>
+<div class="log-section">
+<div class="log-head">📜 ประวัติการอ่านค่า <span id="outlierWarn" style="display:none;color:var(--r);font-size:9px">⚠ พบ Outlier</span></div>
+<div class="log-list" id="logList"></div>
+</div>
+<div class="air-footer"><span>แหล่งข้อมูล: <a href="https://waqi.info" target="_blank">WAQI · กรมควบคุมมลพิษ</a></span><span id="airMode" style="color:var(--g)">● LIVE · WAQI</span></div>
+</div>
+</div>
+
+<!-- ENERGY -->
+<div class="page" id="p-energy">
+<div class="kpis">
+<div class="kpi kg"><div class="kpi-lbl">ประหยัดพลังงาน</div><div class="kpi-val">23.4%</div><div class="kpi-sub">เทียบระบบเดิม</div></div>
+<div class="kpi ka"><div class="kpi-lbl">kWh วันนี้</div><div class="kpi-val">1,842</div><div class="kpi-sub">↓ 487 kWh</div></div>
+<div class="kpi ky"><div class="kpi-lbl">ประหยัด/เดือน</div><div class="kpi-val">฿1.24M</div><div class="kpi-sub">ค่าไฟสาธารณะ</div></div>
+<div class="kpi kg"><div class="kpi-lbl">CO₂ ลด/ปี</div><div class="kpi-val">842 t</div><div class="kpi-sub">ตัน CO₂</div></div>
+</div>
+<div class="card" style="margin-bottom:10px"><div class="card-head">⚡ กราฟพลังงาน 24 ชั่วโมง</div><div class="chart-wrap"><canvas id="ecv2" height="120"></canvas></div></div>
+<div class="card">
+<div class="card-head">💰 Cost Saving · ROI เทียบปีงบประมาณ <span>ปี 2566 → 2568</span></div>
+<div class="roi-grid" id="roiGrid"></div>
+<div style="padding:12px 14px;border-top:1px solid var(--line)">
+<div style="font-size:10px;color:var(--t2);margin-bottom:8px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.7px">งบประมาณที่ประหยัดได้</div>
+<canvas id="roiChart" height="80"></canvas>
+</div>
+<div class="src">คำนวณจากอัตราค่าไฟฟ้าสาธารณะ MEA ฿4.62/kWh</div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="p-settings">
+<div class="card"><div class="card-head">⚙️ ตั้งค่าระบบ Smart Pole</div>
+<div class="sets">
+<div class="set-g"><div class="set-g-title">การควบคุมแสง</div>
+<div class="set-row"><div><div class="set-lbl">เปิด-ปิดอัตโนมัติตามเซนเซอร์แสง</div><div class="set-sub">ข้ามตารางเวลา ตอบสนองค่า lux จริง</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">Dimming 00:00–04:00 น.</div><div class="set-sub">ลดความสว่าง 40%</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">เกณฑ์ Lux เปิดระบบไฟ</div></div><div class="sl-wrap"><input type="range" min="10" max="80" value="30" oninput="document.getElementById('lv').textContent=this.value"><span class="sl-v" id="lv">30</span></div></div>
+</div>
+<div class="set-g"><div class="set-g-title">🌧 Weather Alert</div>
+<div class="set-row"><div><div class="set-lbl">แจ้งเตือนฝนตกหนัก (&gt;10mm/h)</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">แจ้งเตือนพายุ/ลมแรง (&gt;50 กม./ชม.)</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">Interval ดึงข้อมูลอากาศ (วิ)</div></div><div class="sl-wrap"><input type="range" min="60" max="600" value="600" step="60" oninput="wxInterval=+this.value;document.getElementById('wxi').textContent=this.value"><span class="sl-v" id="wxi">600</span></div></div>
+</div>
+<div class="set-g"><div class="set-g-title">🌫 PM2.5 Real-time</div>
+<div class="set-row"><div><div class="set-lbl">แจ้งเตือน PM2.5 &gt; 50 µg/m³</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">Outlier Detection</div><div class="set-sub">Auto-flag สถานีที่ค่าผิดปกติ</div></div><div class="tog on" id="outlierToggle" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">Interval ดึงข้อมูล PM2.5 (วิ)</div></div><div class="sl-wrap"><input type="range" min="60" max="600" value="300" step="60" oninput="airInterval=+this.value;document.getElementById('airi').textContent=this.value"><span class="sl-v" id="airi">300</span></div></div>
+</div>
+<div class="set-g"><div class="set-g-title">🔗 Integration · Dispatch</div>
+<div class="set-row"><div><div class="set-lbl">LINE Notify — ส่งงานทีมช่าง</div><div class="set-sub">Token: ******* (ตั้งค่าแล้ว)</div></div><div class="tog on" onclick="this.classList.toggle('on')"></div></div>
+<div class="set-row"><div><div class="set-lbl">Audit Log Retention (วัน)</div></div><div class="sl-wrap"><input type="range" min="30" max="365" value="90" step="30" oninput="document.getElementById('logret').textContent=this.value+'d'"><span class="sl-v" id="logret" style="width:32px">90d</span></div></div>
+</div>
+</div>
+</div>
+</div>
+
+</main></div>
+<script>
+/* ═══ AUTH ═══ */
+const Auth=(()=>{
+const P={citizen:['report:create','report:view_own','map:pin'],staff:['report:create','report:view_own','report:view_all','map:pin','dashboard:view','dispatch:send','audit:view','sensor:flag'],admin:['report:create','report:view_own','report:view_all','map:pin','dashboard:view','dispatch:send','audit:view','sensor:flag','settings:edit','crisis:toggle','user:manage']};
+function getS(){try{return{role:sessionStorage.getItem('ssl_role'),token:sessionStorage.getItem('ssl_token'),user:JSON.parse(sessionStorage.getItem('ssl_user')||'null')}}catch{return{role:null,token:null,user:null}}}
+function setS(role,user){if(!P[role])return false;sessionStorage.setItem('ssl_role',role);sessionStorage.setItem('ssl_user',JSON.stringify(user));sessionStorage.setItem('ssl_token',`ssl_mock_${role}_${Date.now()}`);return true}
+function clrS(){['ssl_role','ssl_user','ssl_token'].forEach(k=>sessionStorage.removeItem(k))}
+function can(p,role){const r=role||getS().role;return !!(r&&P[r]&&P[r].includes(p))}
+const ACCS={'admin':{password:'admin123',role:'admin',name:'ผู้ดูแลระบบ',id:'A001',zone:'กทม.'},'staff1':{password:'staff123',role:'staff',name:'เจ้าหน้าที่ ก.',id:'S001',zone:'วังทองหลาง'},'staff2':{password:'staff123',role:'staff',name:'เจ้าหน้าที่ ข.',id:'S002',zone:'ห้วยขวาง'},'citizen1':{password:'pass123',role:'citizen',name:'ประชาชน ทดสอบ',id:'C001',zone:'-'}};
+function login(u,pw){const a=ACCS[u.toLowerCase()];if(!a||a.password!==pw)return{ok:false,message:'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'};const{password:_,...user}=a;setS(a.role,user);return{ok:true,role:a.role}}
+return{can,getSession:getS,clearSession:clrS,login};
+})();
+
+/* ═══ APP ═══ */
+const App=(()=>{
+const RM={citizen:{label:'ประชาชน',color:'#00e5a0',icon:'👤'},staff:{label:'เจ้าหน้าที่',color:'#00c6ff',icon:'🔧'},admin:{label:'ผู้ดูแลระบบ',color:'#ffc14d',icon:'⚙️'}};
+function renderTopbar(){const{role,user}=Auth.getSession();if(!role||!user)return;const m=RM[role];const b=document.getElementById('roleBadge');if(b)b.innerHTML=`<span style="background:${m.color}22;border:1px solid ${m.color}55;color:${m.color};font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;font-family:var(--mono)">${m.icon} ${m.label}</span>`;const n=document.getElementById('currentUser');if(n)n.textContent=user.name||role;const z=document.getElementById('userZone');if(z&&user.zone&&user.zone!=='-'){z.textContent=`เขต${user.zone}`;z.style.display='';}document.getElementById('logoutBtn').addEventListener('click',logout);}
+function renderNav(){const{role}=Auth.getSession();if(!role)return;document.querySelectorAll('[data-require-permission]').forEach(el=>{el.style.display=Auth.can(el.dataset.requirePermission,role)?'':'none'});}
+function renderRole(){const{role}=Auth.getSession();if(!role)return;const C={citizen:{crisis:false,dispatch:false},staff:{crisis:false,dispatch:true},admin:{crisis:true,dispatch:true}};const c=C[role]||C.citizen;_tog('crisisBtn',c.crisis);_cls('.dispatch-btn',c.dispatch);_cls('.flag-btn',Auth.can('sensor:flag',role));if(role==='staff'){const btn=document.getElementById('crisisBtn');if(btn){btn.style.display='';btn.style.opacity='.4';btn.style.cursor='not-allowed';btn.onclick=()=>showToast('⛔ เฉพาะ Admin เท่านั้น');}}if(role==='citizen'){const b=document.getElementById('roleBanner');if(b){b.className='role-banner';b.innerHTML='👤 โหมดประชาชน — ใช้เมนู <b>📝 แจ้งปัญหา</b> เพื่อรายงานเสาไฟในพื้นที่';}}const sp=document.getElementById('staffRptPanel');if(sp)sp.style.display=Auth.can('report:view_all',role)?'':'none';}
+function logout(){Auth.clearSession();document.getElementById('appShell').style.display='none';document.getElementById('loginOverlay').classList.remove('hidden');showToast('👋 ออกจากระบบแล้ว');}
+function _tog(id,show){const el=document.getElementById(id);if(el)el.style.display=show?'':'none';}
+function _cls(sel,show){document.querySelectorAll(sel).forEach(el=>el.style.display=show?'':'none');}
+return{renderTopbar,renderNav,renderRole,logout};
+})();
+
+/* ═══ LOGIN ═══ */
+function handleLogin(){
+const u=document.getElementById('username').value.trim(),pw=document.getElementById('password').value;
+const err=document.getElementById('loginError'),form=document.getElementById('loginForm');
+const r=Auth.login(u,pw);
+if(!r.ok){err.textContent=r.message;err.style.display='block';form.classList.add('shake');setTimeout(()=>form.classList.remove('shake'),400);return;}
+err.style.display='none';
+const{role}=Auth.getSession();
+const m={citizen:{label:'ประชาชน',color:'#00e5a0',icon:'👤'},staff:{label:'เจ้าหน้าที่',color:'#00c6ff',icon:'🔧'},admin:{label:'ผู้ดูแลระบบ',color:'#ffc14d',icon:'⚙️'}}[role];
+const ov=document.getElementById('loginSuccessOverlay');ov.style.display='flex';
+ov.innerHTML=`<div class="login-success-inner"><div style="font-size:48px">${m.icon}</div><div style="font-size:16px;font-weight:700;color:${m.color};margin-top:10px">ยินดีต้อนรับ</div><div style="font-size:12px;color:#6b7fa3;margin-top:5px">เข้าสู่ระบบในฐานะ <b style="color:${m.color}">${m.label}</b></div></div>`;
+setTimeout(()=>{ov.style.display='none';document.getElementById('loginOverlay').classList.add('hidden');document.getElementById('appShell').style.display='grid';document.getElementById('appShell').style.overflow='hidden';App.renderTopbar();App.renderNav();App.renderRole();renderAlerts();renderStationGrid();initReportPage();},900);
+}
+function quickLogin(u,p){document.getElementById('username').value=u;document.getElementById('password').value=p;handleLogin();}
+
+/* ═══ REPORT SYSTEM ═══ */
+let rptPhotos=[],rptGPS=null,rptType={ico:'',lbl:''},rptSev='',myReports=[],allReports=[],curStep=1;
+
+function initReportPage(){
+const sel=document.getElementById('rptDistrict');
+if(sel&&sel.options.length<=1)D50.forEach(d=>{const o=document.createElement('option');o.value=d.n;o.textContent='เขต'+d.n;sel.appendChild(o);});
+if(allReports.length===0){
+allReports=[
+{id:'RPT-0001',ico:'💡',lbl:'หลอดดับ/ไฟไม่ติด',district:'วังทองหลาง',sev:'med',desc:'หลอดดับ 3 จุดติดกัน หน้าตลาดนัด',addr:'ถ.ลาดพร้าว ซอย 71',gps:{lat:13.782,lng:100.586},photos:[],status:'pending',time:'08:42',user:'ประชาชน ก.'},
+{id:'RPT-0002',ico:'⚡',lbl:'สายไฟถูกขโมย',district:'ลาดกระบัง',sev:'high',desc:'สายไฟทองแดงถูกตัดในคืนที่ผ่านมา',addr:'ถ.คุ้มเกล้า',gps:{lat:13.740,lng:100.756},photos:[],status:'dispatched',time:'07:15',user:'ประชาชน ข.'},
+];
+renderStaffReports();
+}
+}
+
+function pickType(btn,ico,lbl){document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');rptType={ico,lbl};}
+function pickSev(btn,level){document.querySelectorAll('.sev-btn').forEach(b=>b.className='sev-btn');rptSev=level;btn.classList.add('s'+level[0]);}
+
+function rptGoStep(n){
+if(n>1&&!rptType.lbl){showToast('⚠ กรุณาเลือกประเภทปัญหา');return;}
+if(n>1&&!rptSev){showToast('⚠ กรุณาเลือกระดับความเร่งด่วน');return;}
+if(n>1&&!document.getElementById('rptDistrict').value){showToast('⚠ กรุณาเลือกเขต');return;}
+if(n>1&&!document.getElementById('rptDesc').value.trim()){showToast('⚠ กรุณากรอกรายละเอียด');return;}
+if(n===4)buildSummary();
+curStep=n;
+for(let i=1;i<=4;i++){const el=document.getElementById(`rStep${i}`);if(el)el.style.display=i===n?'block':'none';}
+document.getElementById('rStepOk').style.display='none';
+updateStepDots(n);
+}
+
+function updateStepDots(n){
+for(let i=1;i<=4;i++){const el=document.getElementById(`rs${i}`);if(!el)continue;el.className='rpt-step'+(i<n?' done':i===n?' active':'');const c=el.querySelector('.step-c');if(c)c.textContent=i<n?'✓':i;}
+}
+
+function buildSummary(){
+const dist=document.getElementById('rptDistrict').value;
+const desc=document.getElementById('rptDesc').value.trim();
+const addr=document.getElementById('rptAddr').value.trim();
+const pole=document.getElementById('rptPoleId').value.trim();
+const sevLbl={'low':'🟢 ปกติ','med':'🟡 เร่งด่วน','high':'🔴 ฉุกเฉิน'}[rptSev]||'—';
+const coord=rptGPS?`${rptGPS.lat.toFixed(6)}, ${rptGPS.lng.toFixed(6)}`:'ไม่ได้ระบุ';
+document.getElementById('rptSummary').innerHTML=`<div class="summary-grid">
+<div><div class="sum-k">ประเภทปัญหา</div><div class="sum-v">${rptType.ico} ${rptType.lbl}</div></div>
+<div><div class="sum-k">ความเร่งด่วน</div><div class="sum-v">${sevLbl}</div></div>
+<div><div class="sum-k">เขต</div><div class="sum-v">เขต${dist}</div></div>
+<div><div class="sum-k">รหัสเสาไฟ</div><div class="sum-v">${pole||'ไม่ระบุ'}</div></div>
+<div style="grid-column:1/-1"><div class="sum-k">รายละเอียด</div><div class="sum-v">${desc}</div></div>
+<div style="grid-column:1/-1"><div class="sum-k">ตำแหน่ง</div><div class="sum-v">${addr||'ไม่ระบุที่อยู่'}${rptGPS?`<span style="font-family:var(--mono);font-size:9px;color:var(--a);display:block">📍 ${coord}</span>`:''}</div></div>
+<div style="grid-column:1/-1"><div class="sum-k">ภาพถ่าย</div><div class="sum-v">${rptPhotos.length} รูป</div></div>
+</div>`;
+const pr=document.getElementById('sumPhotoRow');
+pr.innerHTML=rptPhotos.slice(0,4).map(p=>`<img src="${p.url}" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`).join('');
+pr.style.display=rptPhotos.length?'flex':'none';
+}
+
+function submitReport(){
+const btn=document.getElementById('rptSubmitBtn');btn.disabled=true;btn.innerHTML='⏳ กำลังส่ง...';
+const{user}=Auth.getSession();
+const tid='RPT-'+String(myReports.length+allReports.length+3).padStart(4,'0');
+const now=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+const rpt={id:tid,ico:rptType.ico,lbl:rptType.lbl,district:document.getElementById('rptDistrict').value,sev:rptSev,desc:document.getElementById('rptDesc').value.trim(),addr:document.getElementById('rptAddr').value.trim(),pole:document.getElementById('rptPoleId').value.trim(),gps:rptGPS,photos:rptPhotos.map(p=>p.url),status:'pending',time:now,user:user?.name||'ประชาชน'};
+setTimeout(()=>{
+myReports.unshift(rpt);allReports.unshift(rpt);
+const sevLbl={'low':'ปกติ','med':'เร่งด่วน','high':'ฉุกเฉิน'}[rptSev]||'';
+AUDIT_LOG.unshift({time:now,action:'CITIZEN_REPORT',icon:'📝',title:`รายงานประชาชน: ${rptType.ico} ${rptType.lbl} — เขต${rpt.district}`,meta:`${rpt.desc.substring(0,50)} · ${sevLbl}`,user:user?.name||'ประชาชน',status:'pending',color:'#00c6ff'});
+for(let i=1;i<=4;i++){const el=document.getElementById(`rStep${i}`);if(el)el.style.display='none';}
+document.getElementById('rStepOk').style.display='block';
+document.getElementById('ticketNoEl').textContent=tid;
+updateStepDots(5);
+const cnt=myReports.length;
+document.getElementById('myRptCnt').textContent=cnt;
+document.getElementById('myRptBadge').textContent=cnt;
+document.getElementById('rptBadge').style.display=cnt>0?'':'none';
+document.getElementById('rptBadge').textContent=cnt;
+renderMyReports();renderStaffReports();renderAudit();
+showToast(`✅ ส่งรายงาน ${tid} สำเร็จ!`);
+btn.disabled=false;btn.innerHTML='📤 ส่งรายงานถึงเจ้าหน้าที่';
+},1100);
+}
+
+function resetReport(){
+rptPhotos=[];rptGPS=null;rptType={ico:'',lbl:''};rptSev='';
+document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
+document.querySelectorAll('.sev-btn').forEach(b=>b.className='sev-btn');
+['rptDistrict','rptDesc','rptAddr','rptPoleId'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+document.getElementById('photoGrid').innerHTML='';
+document.getElementById('photoCnt').textContent='ยังไม่มีรูปภาพ (ไม่บังคับ)';
+document.getElementById('gpsCoordsEl').textContent='กดปุ่มเพื่อระบุตำแหน่ง';
+document.getElementById('gpsCoordsEl').className='gps-coords empty';
+document.getElementById('gpsAccEl').style.display='none';
+document.getElementById('gpsPin').style.display='none';
+document.getElementById('gpsMapTxt').textContent='ยังไม่มีพิกัด';
+document.getElementById('gpsBtn').textContent='📍 ระบุตำแหน่ง';
+document.getElementById('rStepOk').style.display='none';
+rptGoStep(1);
+}
+
+/* Photos */
+function addPhotos(files){
+files.forEach(f=>{
+if(rptPhotos.length>=4){showToast('⚠ แนบรูปได้สูงสุด 4 รูป');return;}
+if(f.size>5*1024*1024){showToast(`⚠ ${f.name} ขนาดใหญ่เกิน 5MB`);return;}
+const r=new FileReader();r.onload=e=>{rptPhotos.push({name:f.name,url:e.target.result});renderPhotoGrid();};r.readAsDataURL(f);
+});
+}
+function removePhoto(i){rptPhotos.splice(i,1);renderPhotoGrid();}
+function renderPhotoGrid(){
+document.getElementById('photoGrid').innerHTML=rptPhotos.map((p,i)=>`<div class="photo-thumb"><img src="${p.url}" alt="รูป ${i+1}"><button class="photo-del" onclick="removePhoto(${i})">✕</button></div>`).join('');
+document.getElementById('photoCnt').textContent=rptPhotos.length?`${rptPhotos.length} รูปที่เลือก`:'ยังไม่มีรูปภาพ (ไม่บังคับ)';
+}
+function phDragOver(e){e.preventDefault();document.getElementById('photoZone').classList.add('drag');}
+function phDragLeave(){document.getElementById('photoZone').classList.remove('drag');}
+function phDrop(e){e.preventDefault();document.getElementById('photoZone').classList.remove('drag');addPhotos(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('image/')));}
+
+/* GPS */
+function doGPS(){
+if(!navigator.geolocation){showToast('⚠ เบราว์เซอร์นี้ไม่รองรับ GPS');return;}
+const btn=document.getElementById('gpsBtn');btn.classList.add('busy');btn.textContent='⏳ กำลังระบุ...';
+navigator.geolocation.getCurrentPosition(pos=>{
+rptGPS={lat:pos.coords.latitude,lng:pos.coords.longitude,acc:pos.coords.accuracy};
+setGPSUI();
+},()=>{
+rptGPS={lat:13.7563+(Math.random()-.5)*.08,lng:100.5018+(Math.random()-.5)*.08,acc:50};
+setGPSUI(true);
+},{enableHighAccuracy:true,timeout:8000,maximumAge:0});
+}
+function setGPSUI(demo=false){
+const btn=document.getElementById('gpsBtn');btn.classList.remove('busy');btn.textContent=demo?'📍 พิกัดโดยประมาณ':'✅ ได้พิกัดแล้ว';
+const d=document.getElementById('gpsCoordsEl');d.textContent=`${rptGPS.lat.toFixed(6)}, ${rptGPS.lng.toFixed(6)}`;d.className='gps-coords';
+const ac=document.getElementById('gpsAccEl');ac.style.display='flex';document.getElementById('gpsAccTxt').textContent=`ความแม่นยำ ±${Math.round(rptGPS.acc||50)} เมตร${demo?' (Demo)':''}`;
+document.getElementById('gpsPin').style.display='block';document.getElementById('gpsMapTxt').textContent=`${rptGPS.lat.toFixed(4)}°N, ${rptGPS.lng.toFixed(4)}°E`;
+showToast(demo?'📍 ใช้พิกัดกรุงเทพฯ โดยประมาณ (Demo)':'📍 ระบุตำแหน่งสำเร็จ!');
+}
+
+/* My reports */
+function renderMyReports(){
+const el=document.getElementById('myRptList');if(!el)return;
+if(!myReports.length){el.innerHTML='<div style="padding:18px;text-align:center;font-size:10px;color:var(--t3)">ยังไม่มีรายงาน<br>กรอกแบบฟอร์มด้านซ้ายเพื่อแจ้งปัญหา</div>';return;}
+const SC={pending:'var(--y)',dispatched:'var(--a)',done:'var(--g)'};
+const SL={pending:'⏳ รอดำเนินการ',dispatched:'🔧 ส่งทีมแล้ว',done:'✅ เสร็จสิ้น'};
+el.innerHTML=myReports.map(r=>`<div class="my-rpt-row"><div class="my-rpt-ico">${r.ico}</div><div class="my-rpt-body"><div class="my-rpt-ttl">${r.lbl} · เขต${r.district}</div><div class="my-rpt-meta">${r.time} · <span style="color:${SC[r.status]}">${SL[r.status]}</span></div><div class="my-rpt-meta" style="font-family:var(--mono);font-size:8px;color:var(--a)">${r.id}</div></div>${r.photos[0]?`<img src="${r.photos[0]}" class="my-rpt-thumb" alt="รูป">`:''} </div>`).join('');
+}
+
+/* Staff reports */
+function renderStaffReports(){
+const el=document.getElementById('staffRptList');if(!el)return;
+document.getElementById('allRptBadge').textContent=allReports.length;
+const SC={pending:'var(--y)',dispatched:'var(--a)',done:'var(--g)'};const SL={pending:'⏳ รอ',dispatched:'🔧 ส่งทีม',done:'✅ เสร็จ'};
+el.innerHTML=allReports.map((r,i)=>`<div class="staff-rpt-row">${r.photos[0]?`<img src="${r.photos[0]}" class="staff-thumb" alt="รูป">`:`<div class="staff-thumb-ph">${r.ico}</div>`}<div class="staff-body"><div class="staff-ttl">${r.ico} ${r.lbl} · เขต${r.district}</div><div class="staff-meta">${r.id} · ${r.time} · ${r.user} · <span style="color:${SC[r.status]}">${SL[r.status]}</span></div><div class="staff-meta">${r.desc.substring(0,55)}${r.desc.length>55?'...':''}</div>${r.gps?`<div class="staff-coords">📍 ${r.gps.lat.toFixed(5)}, ${r.gps.lng.toFixed(5)}</div>`:''}${r.addr?`<div class="staff-meta">📌 ${r.addr}</div>`:''}<div style="margin-top:4px">${r.status==='pending'?`<button class="act-btn dispatch" onclick="markDispatch(${i})">📤 ส่งทีม</button>`:''}${r.status==='dispatched'?`<button class="act-btn done" onclick="markDone(${i})">✅ ปิดงาน</button>`:''}${r.photos.length?`<span style="font-size:9px;color:var(--t2);margin-left:4px">📷 ${r.photos.length} รูป</span>`:''}</div></div></div>`).join('');
+}
+
+function markDispatch(i){
+if(!Auth.can('dispatch:send')){showToast('⛔ ไม่มีสิทธิ์');return;}
+allReports[i].status='dispatched';const mr=myReports.find(r=>r.id===allReports[i].id);if(mr)mr.status='dispatched';
+const now=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+AUDIT_LOG.unshift({time:now,action:'DISPATCH',icon:'📤',title:`ส่งทีมซ่อม — ${allReports[i].id} เขต${allReports[i].district}`,meta:allReports[i].lbl,user:Auth.getSession().user?.name||'ผู้ควบคุม',status:'pending',color:'#ffc14d'});
+renderStaffReports();renderMyReports();renderAudit();showToast(`📤 ส่งทีมซ่อม — ${allReports[i].id}`);
+}
+function markDone(i){
+if(!Auth.can('dispatch:send')){showToast('⛔ ไม่มีสิทธิ์');return;}
+allReports[i].status='done';const mr=myReports.find(r=>r.id===allReports[i].id);if(mr)mr.status='done';
+renderStaffReports();renderMyReports();showToast(`✅ ปิดงาน ${allReports[i].id}`);
+}
+
+/* ═══ ORIGINAL APP DATA ═══ */
+const CFG={OW_KEY:'d9c655534cbdabff956b57e670917549',WAQI_TOKEN:'381c37ab9b57c894b89e1961376a80e38479f471',BKK_LAT:13.7563,BKK_LON:100.5018};
+const WAQI_STATIONS=[{id:'@10414',name:'พระนคร',station:'Din Daeng'},{id:'@7097',name:'ห้วยขวาง',station:'Huai Khwang'},{id:'@7098',name:'ธนบุรี',station:'Thonburi'},{id:'@7099',name:'ลาดพร้าว',station:'Chokchai'},{id:'@7100',name:'บางนา',station:'Bangkok'},{id:'@7101',name:'มีนบุรี',station:'Bangkok Ekkamai'},{id:'@10810',name:'ดอนเมือง',station:'Don Mueang'},{id:'@10811',name:'ลาดกระบัง',station:'Lat Krabang'},{id:'@A307564',name:'วัฒนา',station:'Wattana'},{id:'@A391627',name:'สาทร',station:'Sathorn'},{id:'@A237945',name:'บางรัก',station:'Bangrak'},{id:'bangkok',name:'กรุงเทพฯ กลาง',station:'Bangkok City'}];
+const D50=[{n:'คลองเตย',total:4053,ok:3840,wait:150,off:63},{n:'คลองสาน',total:3511,ok:3320,wait:130,off:61},{n:'คลองสามวา',total:16197,ok:15380,wait:590,off:227},{n:'คันนายาว',total:8249,ok:7790,wait:310,off:149},{n:'จตุจักร',total:15242,ok:14430,wait:570,off:242},{n:'จอมทอง',total:8055,ok:7650,wait:290,off:115},{n:'ดอนเมือง',total:10998,ok:10420,wait:410,off:168},{n:'ดินแดง',total:4473,ok:4240,wait:165,off:68},{n:'ดุสิต',total:6997,ok:6620,wait:260,off:117},{n:'ตลิ่งชัน',total:11033,ok:10460,wait:410,off:163},{n:'ทวีวัฒนา',total:11883,ok:11270,wait:445,off:168},{n:'ทุ่งครุ',total:9998,ok:9480,wait:375,off:143},{n:'ธนบุรี',total:4899,ok:4640,wait:184,off:75},{n:'บางกอกน้อย',total:6462,ok:6130,wait:235,off:97},{n:'บางกอกใหญ่',total:3496,ok:3310,wait:131,off:55},{n:'บางกะปิ',total:11073,ok:10510,wait:410,off:153},{n:'บางขุนเทียน',total:13667,ok:12950,wait:515,off:202},{n:'บางเขน',total:15576,ok:14770,wait:585,off:221},{n:'บางคอแหลม',total:3738,ok:3540,wait:140,off:58},{n:'บางแค',total:12186,ok:11560,wait:455,off:171},{n:'บางซื่อ',total:6260,ok:5940,wait:232,off:88},{n:'บางนา',total:7473,ok:7090,wait:276,off:107},{n:'บางบอน',total:4468,ok:4240,wait:165,off:63},{n:'บางพลัด',total:2156,ok:2040,wait:82,off:34},{n:'บางรัก',total:5945,ok:5640,wait:218,off:87},{n:'บึงกุ่ม',total:8477,ok:8040,wait:310,off:127},{n:'ปทุมวัน',total:3707,ok:3510,wait:138,off:59},{n:'ประเวศ',total:17912,ok:16990,wait:665,off:257},{n:'ป้อมปราบฯ',total:2700,ok:2560,wait:101,off:39},{n:'พญาไท',total:4614,ok:4380,wait:170,off:64},{n:'พระโขนง',total:4878,ok:4630,wait:178,off:70},{n:'พระนคร',total:4301,ok:4080,wait:157,off:64},{n:'ภาษีเจริญ',total:3423,ok:3250,wait:123,off:50},{n:'มีนบุรี',total:3657,ok:3470,wait:133,off:54},{n:'ยานนาวา',total:4703,ok:4460,wait:173,off:70},{n:'ราชเทวี',total:2074,ok:1970,wait:76,off:28},{n:'ราษฎร์บูรณะ',total:3496,ok:3310,wait:131,off:55},{n:'ลาดกระบัง',total:17990,ok:17070,wait:665,off:255},{n:'ลาดพร้าว',total:8721,ok:8270,wait:321,off:130},{n:'วังทองหลาง',total:8188,ok:7770,wait:298,off:120},{n:'วัฒนา',total:6339,ok:6010,wait:232,off:97},{n:'สวนหลวง',total:4614,ok:4380,wait:170,off:64},{n:'สะพานสูง',total:4878,ok:4630,wait:178,off:70},{n:'สัมพันธวงศ์',total:2074,ok:1970,wait:76,off:28},{n:'สาทร',total:3707,ok:3510,wait:138,off:59},{n:'สายไหม',total:18785,ok:17820,wait:695,off:270},{n:'หนองแขม',total:6677,ok:6330,wait:246,off:101},{n:'หนองจอก',total:18014,ok:17100,wait:667,off:247},{n:'หลักสี่',total:8500,ok:8060,wait:311,off:129},{n:'ห้วยขวาง',total:9885,ok:9380,wait:363,off:142}];
+const ALERTS=[{t:'c',title:'หลอดดับ 3 จุดต่อกัน — ถ.ลาดพร้าว ซอย 71',meta:'เขตวังทองหลาง · BK-04812',time:'09:14',zone:'วังทองหลาง',dispatched:false},{t:'c',title:'Mesh Offline — กลุ่มแผงหลัก เขตห้วยขวาง',meta:'เขตห้วยขวาง · BK-03201–03215',time:'08:50',zone:'ห้วยขวาง',dispatched:false},{t:'c',title:'ลักลอบตัดสายไฟ — ถ.คุ้มเกล้า',meta:'เขตลาดกระบัง · แจ้งตำรวจแล้ว',time:'08:22',zone:'ลาดกระบัง',dispatched:false},{t:'w',title:'PM2.5 เกิน 55 µg/m³ — เขตลาดกระบัง',meta:'เปิดพ่นละอองน้ำบนเสาหลักแล้ว',time:'07:58',zone:'ลาดกระบัง',dispatched:false},{t:'w',title:'แรงดันไฟตก — รัชดาขาเข้า',meta:'เขตบางซื่อ · ประสาน กฟน. แล้ว',time:'07:31',zone:'บางซื่อ',dispatched:false},{t:'i',title:'อัปเดต Firmware v2.1.4 สำเร็จ',meta:'เขตพระนคร · 412 จุดครบ',time:'06:10',zone:'พระนคร',dispatched:false}];
+const AUDIT_LOG=[{time:'09:14',action:'DISPATCH',icon:'📤',title:'ส่งทีมช่างซ่อม — เขตวังทองหลาง',meta:'BK-04812 · ถ.ลาดพร้าว ซอย 71',user:'ผู้ควบคุม A',status:'pending',color:'#ffc14d'},{time:'09:10',action:'SENSOR_FLAG',icon:'🚩',title:'Flag เซนเซอร์ PM2.5 สถานี บางนา',meta:'ค่า 342 µg/m³ — Outlier',user:'ระบบอัตโนมัติ',status:'flagged',color:'#ff4d6d'},{time:'09:02',action:'LIGHT_ON',icon:'💡',title:'เปิดไฟฉุกเฉิน 100% — ถนนสายหลัก',meta:'เขตห้วยขวาง · 215 จุด',user:'ระบบ Auto-Weather',status:'done',color:'#00e5a0'},{time:'08:55',action:'REPAIR',icon:'🔧',title:'บันทึกซ่อมเสร็จ — BK-03199',meta:'เขตห้วยขวาง · ช่างสมชาย',user:'ช่างสมชาย',status:'done',color:'#00e5a0'},{time:'08:22',action:'DISPATCH',icon:'🚔',title:'แจ้งตำรวจ — ลักลอบตัดสายไฟ',meta:'เขตลาดกระบัง · ถ.คุ้มเกล้า',user:'ผู้ควบคุม A',status:'done',color:'#00e5a0'},{time:'07:58',action:'LIGHT_ON',icon:'💧',title:'เปิดพ่นละอองน้ำ — เสาหลัก',meta:'เขตลาดกระบัง · PM2.5 เกิน 55',user:'ระบบ Auto-PM',status:'done',color:'#00e5a0'},{time:'06:10',action:'LIGHT_OFF',icon:'🌙',title:'Dimming 40% — ซอยย่อย',meta:'กทม. 50 เขต · 28,402 จุด',user:'ระบบ Auto-Dimming',status:'done',color:'#00e5a0'}];
+const DIST_WX=D50.map(d=>({name:d.n,dT:(Math.random()-.5)*1.5,dH:(Math.random()-.5)*5,dR:Math.random()*.8,dW:(Math.random()-.5)*4}));
+let wxData=null,wxFcData=[],wxInterval=600,wxCd=600,airInterval=300,airCd=300,stationData={},fetchLog=[],flaggedStations=new Set(),crisisMode=false;
+
+function toggleCrisis(){
+if(!Auth.can('crisis:toggle')){showToast('⛔ เฉพาะ Admin สามารถเปิด Crisis Mode ได้');return;}
+crisisMode=!crisisMode;document.body.classList.toggle('crisis',crisisMode);
+const btn=document.getElementById('crisisBtn');btn.classList.toggle('active-crisis',crisisMode);btn.textContent=crisisMode?'🔴 CRISIS AKTIV':'🚨 Crisis Mode';
+showToast(crisisMode?'🚨 เปิด Crisis Mode':'✅ ปิด Crisis Mode');
+if(crisisMode){document.querySelectorAll('#dtbody tr').forEach(tr=>{const p=tr.querySelector('.pill');if(p&&p.classList.contains('pr')){tr.style.display='';tr.classList.add('highlight-row');}else tr.style.display='none';});}
+else document.querySelectorAll('#dtbody tr').forEach(tr=>{tr.style.display='';tr.classList.remove('highlight-row');});
+}
+
+function liveSearch(q){const res=document.getElementById('searchResults');if(!q.trim()){res.style.display='none';return;}const m=D50.filter(d=>d.n.includes(q)).slice(0,6);if(!m.length){res.style.display='none';return;}res.innerHTML=m.map(d=>`<div class="search-res-item" onclick="selectSearch('${d.n}')"><div>เขต<b>${d.n}</b></div><div class="sr-district">${d.total.toLocaleString()} จุด · ดับ ${d.off}</div></div>`).join('');res.style.display='block';}
+function selectSearch(name){document.getElementById('searchInput').value=name;document.getElementById('searchResults').style.display='none';go('dash',document.querySelector('[data-page=dash]'));setTimeout(()=>{const rows=document.querySelectorAll('#dtbody tr');rows.forEach(tr=>tr.classList.remove('highlight-row'));for(const tr of rows){if(tr.textContent.includes(name)){tr.classList.add('highlight-row');tr.scrollIntoView({behavior:'smooth',block:'center'});showToast(`🔍 พบ: เขต${name}`);break;}}},200);}
+function runSearch(q){document.getElementById('searchResults').style.display='none';selectSearch(q.replace('เขต','').trim());}
+document.addEventListener('click',e=>{if(!e.target.closest('.search-container'))document.getElementById('searchResults').style.display='none';});
+
+function showToast(msg,dur=2800){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.animation='toastOut .3s ease forwards';setTimeout(()=>t.remove(),300)},dur);}
+
+function dispatch(idx){
+if(!Auth.can('dispatch:send')){showToast('⛔ ไม่มีสิทธิ์');return;}
+const al=ALERTS[idx];if(!al)return;al.dispatched=true;
+const now=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+AUDIT_LOG.unshift({time:now,action:'DISPATCH',icon:'📤',title:`ส่งทีม — ${al.title.substring(0,40)}`,meta:`เขต${al.zone} · LINE Notify`,user:Auth.getSession().user?.name||'ผู้ควบคุม',status:'pending',color:'#ffc14d'});
+renderAlerts();renderAudit();showToast(`📤 ส่งงานแล้ว → ทีม${al.zone}`);
+}
+
+function renderAudit(){
+const f=document.getElementById('auditFilter')?.value||'';
+const data=f?AUDIT_LOG.filter(r=>r.action===f):AUDIT_LOG;
+document.getElementById('auditCount').textContent=AUDIT_LOG.length;
+document.getElementById('auditOk').textContent=AUDIT_LOG.filter(r=>r.status==='done').length;
+document.getElementById('auditPend').textContent=AUDIT_LOG.filter(r=>r.status==='pending').length;
+document.getElementById('auditCancel').textContent=AUDIT_LOG.filter(r=>r.status==='flagged').length;
+document.getElementById('auditList').innerHTML=data.map(r=>`<div class="audit-row"><span class="audit-time">${r.time}</span><div class="audit-icon" style="background:${r.color}22;border:1px solid ${r.color}44">${r.icon}</div><div class="audit-body"><div class="audit-title">${r.title}</div><div class="audit-meta">${r.meta}</div></div><span class="audit-user">${r.user}</span><span class="pill ${r.status==='done'?'pg':r.status==='pending'?'py':'pr'}" style="margin-left:8px;flex-shrink:0">${r.status==='done'?'✓ เสร็จ':r.status==='pending'?'⏳ รอ':'🚩 Flag'}</span></div>`).join('');
+}
+
+const AC={c:'rc',w:'rw',i:''};const DC={c:'c',w:'w',i:'i'};
+function renderAlerts(){
+const cd=Auth.can('dispatch:send');
+['alerts','alerts2'].forEach(id=>{const c=document.getElementById(id);if(!c)return;c.innerHTML=ALERTS.map((a,i)=>`<div class="al ${AC[a.t]}"><div class="al-dot ${DC[a.t]}"></div><div class="al-body"><div class="al-title">${a.title}</div><div class="al-meta">${a.meta}</div>${a.t!=='i'&&cd?`<button class="dispatch-btn ${a.dispatched?'sent':''}" onclick="dispatch(${i})">${a.dispatched?'✓ ส่งแล้ว':'📤 ส่งทีม'}</button>`:''}</div><div class="al-time">${a.time}</div></div>`).join('');});
+}
+
+const OWI={'01d':'☀️','01n':'🌙','02d':'🌤','02n':'🌤','03d':'⛅','03n':'⛅','04d':'☁️','04n':'☁️','09d':'🌧','09n':'🌧','10d':'🌦','10n':'🌦','11d':'⛈','11n':'⛈','13d':'❄️','13n':'❄️','50d':'🌫','50n':'🌫'};
+const owI=c=>OWI[c]||'🌡';const wDir=d=>{const a=['N','NE','E','SE','S','SW','W','NW'];return a[Math.round(d/45)%8]};const fmtT=u=>new Date(u*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+function wxLv(d){if(!d)return{lv:'—',cls:'',color:'var(--a)',desc:'รอข้อมูล',icon:'⏳'};const rain=d.rain?.['1h']||0,wind=d.wind.speed*3.6,id=d.weather[0].id;if(id>=200&&id<300)return{lv:'⛈ พายุฝนฟ้าคะนอง',cls:'danger',color:'var(--r)',desc:'เปิดไฟฉุกเฉิน 100%',icon:'⚡'};if(wind>70)return{lv:'🌀 ลมแรงอันตราย',cls:'danger',color:'var(--r)',desc:`ลม ${wind.toFixed(0)} กม./ชม.`,icon:'🌪'};if(rain>15)return{lv:'🌧 ฝนตกหนักมาก',cls:'danger',color:'var(--r)',desc:`${rain.toFixed(1)} mm/h`,icon:'⚠️'};if(rain>5)return{lv:'🌦 ฝนปานกลาง',cls:'warning',color:'var(--y)',desc:`${rain.toFixed(1)} mm/h`,icon:'🌧'};if(rain>0.5)return{lv:'🌂 ฝนเล็กน้อย',cls:'info',color:'var(--a)',desc:`${rain.toFixed(1)} mm/h`,icon:'🌂'};if(wind>50)return{lv:'💨 ลมแรง',cls:'warning',color:'var(--y)',desc:`${wind.toFixed(0)} กม./ชม.`,icon:'💨'};return{lv:'✅ ปกติ',cls:'safe',color:'var(--g)',desc:'สภาพอากาศปกติ',icon:'✅'};}
+async function fetchWeather(){
+setWxPill('loading','⟳ กำลังดึงข้อมูล...');
+try{const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${CFG.BKK_LAT}&lon=${CFG.BKK_LON}&appid=${CFG.OW_KEY}&units=metric&lang=th`);if(!r.ok)throw 0;wxData=await r.json();const rf=await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${CFG.BKK_LAT}&lon=${CFG.BKK_LON}&appid=${CFG.OW_KEY}&units=metric&lang=th&cnt=8`);if(rf.ok){const j=await rf.json();wxFcData=j.list||[];}renderWeather();renderForecast();renderDistrictWx();setWxPill('ok','● ข้อมูลจริง · OpenWeatherMap');document.getElementById('wxUpdAt').textContent=`อัปเดต ${new Date().toLocaleTimeString('th-TH')}`;}
+catch{setWxPill('err','⚠ Fallback');simWx();}
+wxCd=wxInterval;
+}
+function simWx(){const hr=new Date().getHours(),d=hr>=6&&hr<=18,id=hr>=12&&hr<=17?500:800;wxData={main:{temp:31+(d?1:-2),feels_like:36,humidity:75,pressure:1008},wind:{speed:4,deg:180,gust:8},weather:[{id,description:'ข้อมูลจากสถานีข้างเคียง',icon:id>=500?'10d':'02d'}],rain:id>=500?{'1h':2.5}:{},clouds:{all:60},visibility:9000,sys:{sunrise:Math.floor(Date.now()/1000)-14400,sunset:Math.floor(Date.now()/1000)+14400},_fb:true};wxFcData=Array.from({length:8},(_,i)=>({dt:Math.floor(Date.now()/1000)+i*10800,main:{temp:31+(Math.random()*3-1)},weather:[{id:[800,801,500,501][Math.floor(Math.random()*4)],icon:'02d'}],pop:i>=2&&i<=5?.7:.2}));renderWeather();renderForecast();renderDistrictWx();setWxPill('ok','● Fallback');document.getElementById('wxUpdAt').textContent=`Fallback ${new Date().toLocaleTimeString('th-TH')}`;}
+function renderWeather(){if(!wxData)return;const d=wxData,t=d.main.temp,rain=d.rain?.['1h']||0,icon=owI(d.weather[0].icon),al=wxLv(d);document.getElementById('wx-temp').textContent=t.toFixed(1)+'°';document.getElementById('wx-feels').textContent=`รู้สึกเหมือน ${d.main.feels_like.toFixed(1)}°C`;document.getElementById('wx-hum').textContent=d.main.humidity+'%';document.getElementById('wx-wind').textContent=(d.wind.speed*3.6).toFixed(0);document.getElementById('wx-wdir').textContent=`กม./ชม. · ${wDir(d.wind.deg||0)}`;document.getElementById('wx-alv').textContent=al.icon;document.getElementById('wx-alv').style.color=al.color;document.getElementById('wx-adesc').textContent=al.lv;document.getElementById('wxIcon').textContent=icon;document.getElementById('wxTempVal').textContent=t.toFixed(1);document.getElementById('wxDesc').textContent=d.weather[0].description+(d._fb?' (Fallback)':'');document.getElementById('wxPres').textContent=d.main.pressure;document.getElementById('wxVis').textContent=((d.visibility||10000)/1000).toFixed(1);document.getElementById('wxRain').textContent=rain.toFixed(1)+' mm';document.getElementById('wxGust').textContent=((d.wind.gust||d.wind.speed*1.3)*3.6).toFixed(0)+' กม.';document.getElementById('wxCloud').textContent=(d.clouds?.all||0)+'%';document.getElementById('wxSR').textContent=fmtT(d.sys.sunrise);document.getElementById('wxSS').textContent=fmtT(d.sys.sunset);document.getElementById('wxTopIcon').textContent=icon;document.getElementById('wxTopTemp').textContent=t.toFixed(0)+'°C';document.getElementById('wxTopDesc').textContent=d.weather[0].description;const strip=document.getElementById('wxAlert');if(al.cls&&al.cls!=='safe'&&al.cls!==''){strip.innerHTML=`<div class="wx-strip ${al.cls}"><span style="font-size:22px">${al.icon}</span><div style="flex:1"><div style="font-size:12px;font-weight:700;color:${al.color}">${al.lv}</div><div style="font-size:10px;color:var(--t2)">${al.desc}</div></div></div>`;document.getElementById('wxBadge').style.display='';}else{strip.innerHTML='';document.getElementById('wxBadge').style.display='none';}}
+function renderForecast(){document.getElementById('wxFc').innerHTML=wxFcData.map(fc=>{const pop=Math.round((fc.pop||0)*100);return`<div class="wx-fc"><div class="wx-fc-time">${new Date(fc.dt*1000).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</div><div style="font-size:16px">${owI(fc.weather[0].icon)}</div><div class="wx-fc-temp">${fc.main.temp.toFixed(0)}°</div><div class="wx-fc-pop" style="color:${pop>60?'var(--r)':pop>30?'var(--y)':'var(--t2)'}">💧${pop}%</div></div>`;}).join('');}
+function renderDistrictWx(){if(!wxData)return;const d=wxData,bT=d.main.temp,bH=d.main.humidity,bR=d.rain?.['1h']||0,bW=d.wind.speed,icon=owI(d.weather[0].icon);let gh='',th='';DIST_WX.forEach((dist,i)=>{const t=+(bT+dist.dT).toFixed(1),r=Math.max(0,+(bR+dist.dR).toFixed(1)),w=+(bW*3.6+dist.dW).toFixed(0);const isR=r>5||d.weather[0].id>=500&&d.weather[0].id<600,isS=d.weather[0].id>=200&&d.weather[0].id<300;gh+=`<div class="wx-dcard ${isS?'storm':isR?'rain':''}"><div style="font-size:9px;color:var(--t2)">${dist.name}</div><div style="font-size:18px">${icon}</div><div style="font-size:14px;font-weight:700;font-family:var(--mono);color:var(--a)">${t}°</div><div style="font-size:8px;color:${r>5?'var(--r)':r>1?'var(--y)':'var(--t2)'}">🌧 ${r}mm</div><div style="font-size:8px;color:var(--t2)">💨 ${w} กม.</div></div>`;th+=`<tr><td style="color:var(--t2);font-family:var(--mono)">${i+1}</td><td>เขต${dist.name}</td><td>${icon}</td><td style="font-family:var(--mono);color:var(--a)">${t}°C</td><td style="font-family:var(--mono);color:var(--t2)">${Math.round(bH+dist.dH)}%</td><td style="font-family:var(--mono);color:var(--t2)">${w}</td><td style="font-family:var(--mono);color:${r>5?'var(--r)':r>1?'var(--y)':'var(--g)'}">${r}</td><td><span class="pill ${isS?'pr':isR?'py':'pg'}">● ${isS?'⛈ พายุ':isR?'🌧 ฝน':'✅ ปกติ'}</span></td></tr>`;});document.getElementById('wxDistGrid').innerHTML=gh;document.getElementById('wxDistTable').innerHTML=th;document.getElementById('wxDistUpd').textContent=`อัปเดต ${new Date().toLocaleTimeString('th-TH')}`;}
+function setWxPill(t,x){const p=document.getElementById('wxPill');p.className='status-pill '+t;document.getElementById('wxPillTxt').textContent=x;const s=document.getElementById('wxSpin');s.textContent=t==='loading'?'⟳':t==='ok'?'✓':'⚠';s.style.animation=t==='loading'?'spin .8s linear infinite':'none';}
+
+function pmLevel(v){if(v<=12)return{label:'ดีมาก',color:'#00e5a0'};if(v<=35)return{label:'ดี',color:'#00e5a0'};if(v<=55)return{label:'ปานกลาง',color:'#ffc14d'};if(v<=150)return{label:'มีผลต่อสุขภาพ',color:'#ff9a3c'};if(v<=250)return{label:'อันตราย',color:'#ff4d6d'};return{label:'อันตรายมาก',color:'#c0193a'};}
+function pm2aqi(pm){const bp=[[0,12,0,50],[12.1,35.4,51,100],[35.5,55.4,101,150],[55.5,150.4,151,200],[150.5,250.4,201,300],[250.5,500.4,301,500]];for(const[cl,ch,il,ih]of bp)if(pm>=cl&&pm<=ch)return Math.round(((ih-il)/(ch-cl))*(pm-cl)+il);return 500;}
+function aqi2pm(aqi){const bp=[[0,50,0,12],[51,100,12.1,35.4],[101,150,35.5,55.4],[151,200,55.5,150.4],[201,300,150.5,250.4],[301,500,250.5,500.4]];for(const[il,ih,cl,ch]of bp)if(aqi>=il&&aqi<=ih)return+((((ch-cl)/(ih-il))*(aqi-il)+cl).toFixed(1));return aqi;}
+function isOutlier(name,pm){if(!document.getElementById('outlierToggle')?.classList.contains('on'))return false;if(flaggedStations.has(name))return true;const prev=stationData[name]?.pm;if(!prev||prev<5)return false;return Math.abs(pm-prev)/prev>1.0&&pm>150;}
+function flagStation(name){if(!Auth.can('sensor:flag')){showToast('⛔ ไม่มีสิทธิ์');return;}flaggedStations.add(name);const now=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});AUDIT_LOG.unshift({time:now,action:'SENSOR_FLAG',icon:'🚩',title:`Flag เซนเซอร์ PM2.5 — เขต${name}`,meta:'ผู้ใช้กด Flag',user:Auth.getSession().user?.name||'ผู้ควบคุม',status:'flagged',color:'#ff4d6d'});renderAudit();showToast(`🚩 Flag ${name}`);renderStationGrid();}
+async function fetchStation(sta){const r=await fetch(`https://api.waqi.info/feed/${sta.id}/?token=${CFG.WAQI_TOKEN}`);if(!r.ok)throw 0;const j=await r.json();if(j.status!=='ok')throw 0;const aqi=j.data.aqi,pm=typeof aqi==='number'?aqi2pm(aqi):null;return{name:sta.name,station:j.data.city?.name||sta.station,aqi,pm,source:'live'};}
+async function fetchAir(){
+setAirPill('loading','⟳ ดึงข้อมูล WAQI...');
+for(const sta of WAQI_STATIONS){try{const d=await fetchStation(sta);const out=isOutlier(sta.name,d.pm||0);if(out&&!flaggedStations.has(sta.name)){flaggedStations.add(sta.name);const now=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});AUDIT_LOG.unshift({time:now,action:'SENSOR_FLAG',icon:'🚩',title:`Auto-Flag: PM2.5 กระโดด — ${sta.name}`,meta:`${d.pm} µg/m³`,user:'ระบบอัตโนมัติ',status:'flagged',color:'#ff4d6d'});}stationData[sta.name]=stationData[sta.name]||{history:[]};stationData[sta.name].pm=d.pm;stationData[sta.name].aqi=d.aqi;stationData[sta.name].station=d.station;stationData[sta.name].history.push(d.pm||0);if(stationData[sta.name].history.length>20)stationData[sta.name].history.shift();stationData[sta.name].outlier=out;}catch{stationData[sta.name]=stationData[sta.name]||{history:[],pm:35+Math.random()*10,aqi:80};}}
+const vp=Object.entries(stationData).filter(([n])=>!flaggedStations.has(n)).map(([,s])=>s.pm).filter(v=>v&&v>0);const oc=flaggedStations.size;
+document.getElementById('outlierCount').textContent=oc;if(oc>0)document.getElementById('outlierWarn').style.display='';
+const avg=vp.length?+(vp.reduce((a,b)=>a+b,0)/vp.length).toFixed(1):null;
+if(avg){const lv=pmLevel(avg);document.getElementById('bkkPm').textContent=avg;document.getElementById('bkkPm').style.color=lv.color;document.getElementById('bkkLv').textContent=lv.label;document.getElementById('bkkLv').style.color=lv.color;document.getElementById('bkkAqiNum').textContent='AQI: '+pm2aqi(avg);document.getElementById('bkkAdvice').textContent=lv.label;document.getElementById('airPmMain').textContent=avg;document.getElementById('airPmMain').style.color=lv.color;document.getElementById('airPmLv').textContent=lv.label;document.getElementById('airAqi').textContent=pm2aqi(avg);document.getElementById('airAqiLv').textContent=lv.label;document.getElementById('airLastUpd').textContent=`อัปเดต ${new Date().toLocaleTimeString('th-TH')}`;document.getElementById('airStaCnt').textContent=vp.length;addLog(avg,oc);}
+renderStationGrid();setAirPill('ok',`● LIVE · WAQI · ${vp.length} สถานี${oc?` · ⚠${oc} Flagged`:''}`);document.getElementById('airUpdAt').textContent=`อัปเดต ${new Date().toLocaleTimeString('th-TH')}`;airCd=airInterval;
+}
+function initStationGrid(){document.getElementById('rtGrid').innerHTML=WAQI_STATIONS.map(s=>`<div class="rt-card" id="zc-${s.name}"><div class="rt-dot live"></div><div class="rt-name">${s.name}</div><div class="rt-pm" id="zp-${s.name}" style="color:var(--y)">—</div><div class="rt-unit">μg/m³</div><div class="rt-tag" id="zt-${s.name}">—</div><div class="rt-sub" id="zs-${s.name}">—</div><div id="zbadge-${s.name}"></div><div class="hist-bar" id="zh-${s.name}"></div></div>`).join('');}
+function renderStationGrid(){const cf=Auth.can('sensor:flag');WAQI_STATIONS.forEach(s=>{const d=stationData[s.name];if(!d)return;const fl=flaggedStations.has(s.name),lv=pmLevel(d.pm||0);const pm=document.getElementById('zp-'+s.name);if(!pm)return;pm.textContent=d.pm?d.pm.toFixed(1):'—';pm.style.color=fl?'var(--t2)':lv.color;pm.style.textDecoration=fl?'line-through':'';const tag=document.getElementById('zt-'+s.name);tag.textContent=lv.label;tag.style.background=lv.color+'22';tag.style.color=lv.color;document.getElementById('zs-'+s.name).textContent='AQI: '+(d.aqi||pm2aqi(d.pm||0))+' · '+d.station;const card=document.getElementById('zc-'+s.name);if(fl)card.classList.add('outlier');else{card.classList.remove('outlier');card.classList.remove('fresh');void card.offsetWidth;card.classList.add('fresh');}const be=document.getElementById('zbadge-'+s.name);if(fl)be.innerHTML=`<span class="outlier-badge">🚩 Flagged</span>`;else if(d.outlier)be.innerHTML=`<span class="outlier-badge">⚠ Outlier</span>${cf?`<button class="flag-btn" onclick="flagStation('${s.name}')">Flag</button>`:''}`;else be.innerHTML=cf?`<button class="flag-btn" onclick="flagStation('${s.name}')">Flag</button>`:'';const hist=document.getElementById('zh-'+s.name);if(hist&&d.history.length>1){const mx=Math.max(...d.history),mn=Math.min(...d.history);hist.innerHTML=d.history.map(v=>`<div class="hb" style="height:${mx>mn?Math.max(2,((v-mn)/(mx-mn))*18+2):10}px;background:${pmLevel(v).color}"></div>`).join('');}});}
+function addLog(pm,out=0){const ts=new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});fetchLog.unshift({time:ts,pm,out});if(fetchLog.length>30)fetchLog.pop();const list=document.getElementById('logList');if(!list)return;list.innerHTML=fetchLog.map(l=>`<div class="log-row"><span class="log-time">${l.time}</span><span class="log-zone" style="flex:1">Bangkok เฉลี่ย${l.out?` <span style="color:var(--r);font-size:8px">⚠${l.out}</span>`:''}</span><span class="log-val" style="color:${pmLevel(l.pm).color}">${l.pm} µg</span><span style="font-size:8px;color:var(--g);margin-left:4px">🟢</span></div>`).join('');}
+function setAirPill(t,x){const p=document.getElementById('airPill');p.className='status-pill '+t;document.getElementById('airPillTxt').textContent=x;const s=document.getElementById('airSpin');s.textContent=t==='loading'?'⟳':t==='ok'?'✓':'⚠';s.style.animation=t==='loading'?'spin .8s linear infinite':'none';}
+
+function initDash(){
+let sT=0,sO=0,sW=0,sF=0;D50.forEach(d=>{sT+=d.total;sO+=d.ok;sW+=d.wait;sF+=d.off});
+document.getElementById('kTot').textContent=sT.toLocaleString();document.getElementById('kOk').textContent=sO.toLocaleString();document.getElementById('kWait').textContent=sW.toLocaleString();document.getElementById('kOff').textContent=sF.toLocaleString();
+const pO=(sO/sT*100).toFixed(1);document.getElementById('kOkPct').textContent=`↑ ${pO}% ของทั้งหมด`;
+document.getElementById('donut-leg').innerHTML=`<span style="color:var(--g)">●</span> ใช้ได้ ${pO}% &nbsp;<span style="color:var(--y)">●</span> รอซ่อม ${(sW/sT*100).toFixed(1)}% &nbsp;<span style="color:var(--r)">●</span> ดับ ${(sF/sT*100).toFixed(1)}%`;
+const tb=document.getElementById('dtbody');
+D50.forEach((d,i)=>{const pct=Math.round(d.ok/d.total*100),cls=pct>=95?'pg':pct>=88?'py':'pr',lbl=pct>=95?'ปกติ':pct>=88?'ต้องบำรุง':'ขัดข้อง',bc=pct>=95?'var(--g)':pct>=88?'var(--y)':'var(--r)';tb.innerHTML+=`<tr><td style="color:var(--t2);font-family:var(--mono)">${i+1}</td><td style="font-weight:600">เขต${d.n}</td><td style="font-family:var(--mono);color:var(--t2);text-align:right">${d.total.toLocaleString()}</td><td style="font-family:var(--mono);color:var(--g);text-align:right">${d.ok.toLocaleString()}</td><td style="font-family:var(--mono);color:var(--y);text-align:right">${d.wait.toLocaleString()}</td><td style="font-family:var(--mono);color:var(--r);text-align:right">${d.off.toLocaleString()}</td><td><span class="pill ${cls}">● ${lbl}</span><div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${bc}"></div></div><span style="font-family:var(--mono);font-size:10px;color:var(--t2)">${pct}%</span></td></tr>`;});
+renderAlerts();
+const sd=[{n:'💨 PM2.5 เฉลี่ย',val:'—',pct:0,col:'var(--y)',id:'sensPm'},{n:'☀️ UV Index',val:'3.1',pct:31,col:'var(--a)'},{n:'💡 เสาไฟปกติ',val:pO+'%',pct:+pO,col:'var(--g)'},{n:'🔴 อัตราชำรุด',val:(sF/sT*100).toFixed(1)+'%',pct:Math.round(sF/sT*100)*8,col:'var(--r)'}];
+document.getElementById('sens').innerHTML=sd.map(s=>`<div class="srow"${s.id?` id="${s.id}"`:''}><div class="slbl"><span class="sn">${s.n}</span><span class="sv" style="color:${s.col}">${s.val}</span></div><div class="sbar"><div class="sfill" style="width:${s.pct}%;background:${s.col}"></div></div></div>`).join('');
+const eD=[420,395,378,360,342,332,325,320,338,378,440,492,514,532,541,528,502,481,462,441,428,412,398,384];
+setTimeout(()=>{drawLine('ecv',eD,'#00c6ff',false);drawLine('ecv2',eD,'#00c6ff',true);drawDonut('dcv',sO,sW,sF,sT);initRoi();},120);
+renderAudit();
+}
+function initRoi(){
+const rd=[{year:'2566',kwh:2329,saving:0,baht:0},{year:'2567',kwh:1998,saving:14.2,baht:730000},{year:'2568',kwh:1842,saving:23.4,baht:1240000}];
+document.getElementById('roiGrid').innerHTML=rd.map(r=>`<div class="roi-card"><div class="roi-lbl">ปีงบประมาณ ${r.year}</div><div class="roi-val">${r.baht?'฿'+r.baht.toLocaleString():'—'}</div><div class="roi-sub">${r.kwh.toLocaleString()} kWh/วัน</div><div class="roi-delta" style="color:${r.saving?'var(--g)':'var(--t2)'}">${r.saving?`↓ ${r.saving}% จากปีฐาน`:'ปีฐาน'}</div><div class="roi-bar-wrap"><div class="roi-bar-fill" style="width:${r.saving/25*100}%"></div></div></div>`).join('');
+const cv=document.getElementById('roiChart');if(!cv)return;cv.width=cv.offsetWidth||500;cv.height=80;const ctx=cv.getContext('2d'),w=cv.width,h=cv.height;const bars=[{label:'2566',val:0,color:'#2e3f5c'},{label:'2567',val:730000,color:'#00c6ff'},{label:'2568',val:1240000,color:'#00e5a0'}];const mx=1400000,bw=Math.min(60,w/bars.length*.5),gap=(w-bw*bars.length)/(bars.length+1);ctx.clearRect(0,0,w,h);bars.forEach((b,i)=>{const x=gap+i*(bw+gap),bh=Math.max(2,(b.val/mx)*(h-24)),y=h-bh-14;const g=ctx.createLinearGradient(0,y,0,y+bh);g.addColorStop(0,b.color);g.addColorStop(1,b.color+'44');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(x,y,bw,bh,3);ctx.fill();ctx.fillStyle='#6b7fa3';ctx.font='9px Sarabun';ctx.textAlign='center';ctx.fillText(b.label,x+bw/2,h-2);if(b.val){ctx.fillStyle=b.color;ctx.font='bold 9px Share Tech Mono';ctx.fillText('฿'+Math.round(b.val/1000)+'K',x+bw/2,y-3);}});
+}
+
+const TITLES={dash:'ภาพรวมระบบ',alert:'แจ้งเตือน',audit:'📋 ประวัติการสั่งงาน',report:'📝 แจ้งปัญหาเสาไฟ',weather:'🌧 Weather Alert',air:'🌫 PM2.5 Real-time · WAQI',energy:'⚡ พลังงาน & ROI',settings:'ตั้งค่า'};
+function go(id,el){
+document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.getElementById('p-'+id).classList.add('on');
+document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));if(el&&el.classList)el.classList.add('on');
+document.getElementById('ptitle').textContent=TITLES[id]||id;
+if(id==='energy')setTimeout(()=>{drawLine('ecv2',[420,395,378,360,342,332,325,320,338,378,440,492,514,532,541,528,502,481,462,441,428,412,398,384],'#00c6ff',true);initRoi();},80);
+if(id==='audit')renderAudit();
+if(id==='report'){initReportPage();renderMyReports();renderStaffReports();}
+}
+
+setInterval(()=>{const d=new Date(),p=v=>String(v).padStart(2,'0');document.getElementById('clk').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());},1000);
+
+function drawLine(id,data,color,big){const cv=document.getElementById(id);if(!cv)return;const ctx=cv.getContext('2d');cv.width=cv.offsetWidth||400;cv.height=big?120:80;const w=cv.width,h=cv.height,n=data.length,mx=Math.max(...data),mn=Math.min(...data);const pts=data.map((v,i)=>({x:i/(n-1)*w,y:h-((v-mn)/(mx-mn||1))*(h*.78)-h*.11}));const g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,color+'3a');g.addColorStop(1,color+'00');ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.moveTo(pts[0].x,h);pts.forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(pts[n-1].x,h);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke();}
+function drawDonut(id,ok,wait,off,total){const cv=document.getElementById(id);if(!cv)return;const ctx=cv.getContext('2d');cv.width=cv.offsetWidth||200;cv.height=80;const cx=cv.width/2,cy=40,r=32,ir=20;let s=-Math.PI/2;[[ok,'#00e5a0'],[wait,'#ffc14d'],[off,'#ff4d6d']].forEach(([v,c])=>{const e=s+(v/total)*2*Math.PI;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);ctx.closePath();ctx.fillStyle=c;ctx.fill();s=e;});ctx.beginPath();ctx.arc(cx,cy,ir,0,Math.PI*2);ctx.fillStyle='#131b2e';ctx.fill();ctx.fillStyle='#6b7fa3';ctx.font='bold 9px Sarabun';ctx.textAlign='center';ctx.fillText(total.toLocaleString(),cx,cy+3);}
+
+window.addEventListener('DOMContentLoaded',()=>{
+initDash();initStationGrid();
+const{role,token}=Auth.getSession();
+if(role&&token&&token.startsWith('ssl_mock_')){document.getElementById('loginOverlay').classList.add('hidden');document.getElementById('appShell').style.display='grid';document.getElementById('appShell').style.overflow='hidden';App.renderTopbar();App.renderNav();App.renderRole();renderAlerts();renderStationGrid();initReportPage();}
+fetchWeather();
+setInterval(fetchWeather,wxInterval*1000);
+setInterval(()=>{wxCd--;if(wxCd<0)wxCd=wxInterval;const el=document.getElementById('wxCd');if(el)el.textContent=wxCd;},1000);
+fetchAir();
+setInterval(fetchAir,airInterval*1000);
+setInterval(()=>{airCd--;if(airCd<0)airCd=airInterval;const el=document.getElementById('airCd');if(el)el.textContent=airCd;const avgEl=document.getElementById('sensPm');if(avgEl&&document.getElementById('bkkPm').textContent!=='—'){const pm=document.getElementById('bkkPm').textContent;const sv=avgEl.querySelector('.sv'),fi=avgEl.querySelector('.sfill');if(sv){sv.textContent=pm+' µg/m³';sv.style.color=pmLevel(+pm).color;}if(fi)fi.style.width=Math.min(+pm/150*100,100)+'%';}},1000);
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')handleLogin();});
+});
+</script>
+</body>
+</html>
